@@ -1,0 +1,441 @@
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip } from "recharts";
+
+type Node = {
+  address: string;
+  pubkey: string | null;
+  version: string;
+  last_seen_timestamp: number;
+};
+
+type SortField = "pubkey" | "address" | "version" | "last_seen";
+
+export default function Home() {
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState<SortField>("last_seen");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchNodes = async (showRefresh = false) => {
+    try {
+      if (showRefresh) setRefreshing(true);
+      setError(null);
+      const response = await fetch("/api/nodes");
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setNodes(data.filter((n: Node) => n.pubkey !== null));
+      setLoading(false);
+      if (showRefresh) setTimeout(() => setRefreshing(false), 500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch nodes");
+      setLoading(false);
+      if (showRefresh) setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNodes();
+    const interval = setInterval(() => fetchNodes(true), 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const getTimeSince = (timestamp: number) => {
+    const now = Math.floor(Date.now() / 1000);
+    const diff = now - timestamp;
+    if (diff < 60) return `${diff}s`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+    return `${Math.floor(diff / 86400)}d`;
+  };
+
+  const stats = useMemo(() => {
+    const now = Math.floor(Date.now() / 1000);
+    const activeNodes = nodes.filter((n) => now - n.last_seen_timestamp < 30);
+    const uniqueIPs = new Set(nodes.map((n) => n.address.split(":")[0])).size;
+    const versions = new Set(nodes.map((n) => n.version)).size;
+    
+    return {
+      total: nodes.length,
+      active: activeNodes.length,
+      versions,
+      uniqueIPs,
+    };
+  }, [nodes]);
+
+  const versionData = useMemo(() => {
+    const versionCounts: Record<string, number> = {};
+    nodes.forEach((n) => {
+      versionCounts[n.version] = (versionCounts[n.version] || 0) + 1;
+    });
+    return Object.entries(versionCounts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+  }, [nodes]);
+
+  const activityData = useMemo(() => {
+    const now = Math.floor(Date.now() / 1000);
+    const intervals = [0, 30, 60, 120, 300, 600];
+    return intervals.map((seconds) => ({
+      time: seconds === 0 ? "Now" : `${seconds}s`,
+      count: nodes.filter((n) => now - n.last_seen_timestamp <= seconds).length,
+    }));
+  }, [nodes]);
+
+  const filteredAndSortedNodes = useMemo(() => {
+    let filtered = nodes.filter((node) =>
+      node.pubkey?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      node.address.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    filtered.sort((a, b) => {
+      let aVal: string | number = "";
+      let bVal: string | number = "";
+
+      if (sortField === "last_seen") {
+        aVal = a.last_seen_timestamp;
+        bVal = b.last_seen_timestamp;
+      } else {
+        aVal = a[sortField] || "";
+        bVal = b[sortField] || "";
+      }
+
+      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }, [nodes, searchTerm, sortField, sortOrder]);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("desc");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] text-white p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="h-8 w-64 skeleton rounded mb-8"></div>
+          <div className="grid grid-cols-4 gap-4 mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-24 skeleton rounded-xl"></div>
+            ))}
+          </div>
+          <div className="h-96 skeleton rounded-xl"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-cyan-500 text-5xl mb-4">⚠</div>
+          <h2 className="text-xl font-bold mb-2">Connection Error</h2>
+          <p className="text-gray-400 mb-6">{error}</p>
+          <button
+            onClick={() => fetchNodes()}
+            className="bg-cyan-500 hover:bg-cyan-600 px-6 py-2 rounded-lg font-bold transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const COLORS = ["#06b6d4", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981"];
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              Xandeum pNode Analytics
+            </h1>
+            <p className="text-gray-500 text-sm mt-1">Real-time DevNet monitoring</p>
+          </div>
+          <div className="flex items-center gap-3">
+            {refreshing && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-cyan-500 text-sm flex items-center gap-2"
+              >
+                <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
+                Refreshing...
+              </motion.div>
+            )}
+            <button
+              onClick={() => fetchNodes(true)}
+              className="px-4 py-2 bg-cyan-500/10 border border-cyan-500/30 rounded-lg text-cyan-500 hover:bg-cyan-500/20 transition-colors text-sm font-bold"
+            >
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        {/* Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-xl p-6 glow-cyan"
+          >
+            <div className="text-gray-400 text-sm mb-1">Total Active Nodes</div>
+            <div className="text-4xl font-black text-cyan-400">{stats.total}</div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-6"
+          >
+            <div className="text-gray-400 text-sm mb-1">Unique Versions</div>
+            <div className="text-4xl font-black text-purple-400">{stats.versions}</div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-6"
+          >
+            <div className="text-gray-400 text-sm mb-1">Active (30s)</div>
+            <div className="text-4xl font-black text-green-400">{stats.active}</div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-br from-orange-500/10 to-yellow-500/10 border border-orange-500/30 rounded-xl p-6"
+          >
+            <div className="text-gray-400 text-sm mb-1">Network Reach</div>
+            <div className="text-4xl font-black text-orange-400">{stats.uniqueIPs}</div>
+            <div className="text-xs text-gray-500 mt-1">unique IPs</div>
+          </motion.div>
+        </div>
+
+        {/* Search */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search by public key or IP address..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-black/50 border border-cyan-500/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 transition-colors"
+          />
+        </div>
+
+        {/* Table */}
+        <div className="bg-black/30 border border-cyan-500/20 rounded-xl overflow-hidden mb-8">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-cyan-500/10 sticky top-0">
+                <tr>
+                  <th
+                    onClick={() => handleSort("pubkey")}
+                    className="text-left px-6 py-4 text-xs font-bold text-cyan-400 uppercase tracking-wider cursor-pointer hover:bg-cyan-500/20 transition-colors"
+                  >
+                    Public Key {sortField === "pubkey" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </th>
+                  <th
+                    onClick={() => handleSort("address")}
+                    className="text-left px-6 py-4 text-xs font-bold text-cyan-400 uppercase tracking-wider cursor-pointer hover:bg-cyan-500/20 transition-colors"
+                  >
+                    Address {sortField === "address" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </th>
+                  <th
+                    onClick={() => handleSort("version")}
+                    className="text-left px-6 py-4 text-xs font-bold text-cyan-400 uppercase tracking-wider cursor-pointer hover:bg-cyan-500/20 transition-colors"
+                  >
+                    Version {sortField === "version" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </th>
+                  <th
+                    onClick={() => handleSort("last_seen")}
+                    className="text-right px-6 py-4 text-xs font-bold text-cyan-400 uppercase tracking-wider cursor-pointer hover:bg-cyan-500/20 transition-colors"
+                  >
+                    Last Seen {sortField === "last_seen" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-cyan-500/10">
+                {filteredAndSortedNodes.map((node, index) => {
+                  const now = Math.floor(Date.now() / 1000);
+                  const isRecent = now - node.last_seen_timestamp < 30;
+                  
+                  return (
+                    <motion.tr
+                      key={node.pubkey || index}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: index * 0.01 }}
+                      onClick={() => setSelectedNode(node)}
+                      className={`cursor-pointer hover:bg-cyan-500/5 transition-colors ${
+                        isRecent ? "bg-green-500/5" : ""
+                      }`}
+                    >
+                      <td className="px-6 py-4">
+                        <span className="font-mono text-sm text-gray-300">
+                          {node.pubkey ? `${node.pubkey.slice(0, 8)}...${node.pubkey.slice(-4)}` : "N/A"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-400">{node.address}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                          {node.version}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <span className={`text-sm font-bold ${isRecent ? "text-green-400" : "text-gray-500"}`}>
+                          {getTimeSince(node.last_seen_timestamp)} ago
+                        </span>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Charts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-black/30 border border-cyan-500/20 rounded-xl p-6">
+            <h3 className="text-lg font-bold text-cyan-400 mb-4">Version Distribution</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={versionData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {versionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="bg-black/30 border border-cyan-500/20 rounded-xl p-6">
+            <h3 className="text-lg font-bold text-cyan-400 mb-4">Activity Timeline</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={activityData}>
+                <XAxis dataKey="time" stroke="#6b7280" />
+                <YAxis stroke="#6b7280" />
+                <RechartsTooltip
+                  contentStyle={{ backgroundColor: "#1a1a1a", border: "1px solid #06b6d4" }}
+                />
+                <Line type="monotone" dataKey="count" stroke="#06b6d4" strokeWidth={3} dot={{ fill: "#06b6d4" }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Side Panel */}
+      <AnimatePresence>
+        {selectedNode && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedNode(null)}
+              className="fixed inset-0 bg-black/80 z-40"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
+              className="fixed right-0 top-0 h-full w-full md:w-[500px] bg-[#0a0a0a] border-l border-cyan-500/30 z-50 overflow-y-auto"
+            >
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-cyan-400">Node Details</h2>
+                  <button
+                    onClick={() => setSelectedNode(null)}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">PUBLIC KEY</div>
+                    <div className="font-mono text-sm text-white break-all bg-black/50 p-3 rounded border border-cyan-500/20">
+                      {selectedNode.pubkey || "N/A"}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">ADDRESS</div>
+                    <div className="font-mono text-sm text-white bg-black/50 p-3 rounded border border-cyan-500/20">
+                      {selectedNode.address}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">VERSION</div>
+                    <div className="text-sm text-white bg-black/50 p-3 rounded border border-cyan-500/20">
+                      {selectedNode.version}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">LAST SEEN</div>
+                    <div className="text-sm text-white bg-black/50 p-3 rounded border border-cyan-500/20">
+                      {getTimeSince(selectedNode.last_seen_timestamp)} ago
+                      <div className="text-xs text-gray-500 mt-1">
+                        {new Date(selectedNode.last_seen_timestamp * 1000).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">RAW JSON</div>
+                    <pre className="text-xs text-gray-400 bg-black/50 p-3 rounded border border-cyan-500/20 overflow-x-auto">
+                      {JSON.stringify(selectedNode, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

@@ -4,17 +4,25 @@ Real-time analytics platform for monitoring Xandeum pNodes on DevNet. Fetches li
 
 ## Features
 
-- ✅ **Live pNode Data** - Fetches real pNodes from Xandeum DevNet (192.190.136.36)
-- ✅ **Real-time Updates** - Auto-refreshes every 30 seconds
-- ✅ **100+ Active Nodes** - Displays all nodes from the Xandeum network
-- ✅ **Node Information**:
-  - Public Key (Solana-style addresses)
-  - IP Address & Port
-  - Software Version
-  - Last Seen (relative time)
-- ✅ **Professional UI** - Clean, responsive design with Tailwind CSS
-- ✅ **Error Handling** - Graceful error states with retry functionality
+### Core Functionality
+- ✅ **Live pNode Data** - Real-time data from Xandeum DevNet (192.190.136.36)
+- ✅ **100+ Active Nodes** - Complete network visibility
+- ✅ **Auto-refresh** - Updates every 30 seconds
 - ✅ **No Setup Required** - Connects directly to public DevNet
+
+### Dashboard Features
+- 📊 **Network Statistics** - Total nodes, online count, version distribution
+- 🔍 **Search & Filter** - Find nodes by public key, address, version, or status
+- 🎨 **Professional UI** - Clean, modern design inspired by top validator dashboards
+- 📱 **Responsive Design** - Works on desktop, tablet, and mobile
+- 🟢 **Status Indicators** - Real-time online/stale/offline status with color coding
+- 📋 **Version Tracking** - Monitor software versions across the network
+
+### Technical Features
+- ⚡ **Fast Performance** - Optimized React components with useMemo
+- 🔒 **Type Safety** - Full TypeScript implementation
+- 🎯 **Clean Code** - Professional architecture and best practices
+- 🚀 **Production Ready** - Error handling, loading states, empty states
 
 ## How to Run
 
