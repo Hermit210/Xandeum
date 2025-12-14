@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
 
 type Node = {
   address: string;
@@ -18,6 +18,7 @@ type Node = {
 
 type SortField = "pubkey" | "address" | "version" | "last_seen" | "city" | "uptime";
 type FilterStatus = "all" | "active" | "warning" | "offline";
+type ViewMode = "overview" | "analytics" | "docs";
 
 export default function Home() {
   const [nodes, setNodes] = useState<Node[]>([]);
@@ -32,7 +33,7 @@ export default function Home() {
   const [filterVersion, setFilterVersion] = useState<string>("all");
   const [myNodePubkey, setMyNodePubkey] = useState("");
   const [showMyNodeInput, setShowMyNodeInput] = useState(false);
-  const [showDocs, setShowDocs] = useState(false);
+  const [currentView, setCurrentView] = useState<ViewMode>("overview");
 
   const fetchNodes = async (showRefresh = false) => {
     try {
@@ -117,6 +118,22 @@ export default function Home() {
       time: seconds === 0 ? "Now" : `${seconds}s`,
       count: nodes.filter((n) => now - n.last_seen_timestamp <= seconds).length,
     }));
+  }, [nodes]);
+
+  const statusData = useMemo(() => {
+    const now = Math.floor(Date.now() / 1000);
+    const active = nodes.filter((n) => now - n.last_seen_timestamp < 30).length;
+    const warning = nodes.filter((n) => {
+      const diff = now - n.last_seen_timestamp;
+      return diff >= 30 && diff < 120;
+    }).length;
+    const offline = nodes.filter((n) => now - n.last_seen_timestamp >= 120).length;
+
+    return [
+      { name: "Active", value: active, color: "#14b8a6" },
+      { name: "Warning", value: warning, color: "#f59e0b" },
+      { name: "Offline", value: offline, color: "#6b7280" },
+    ].filter(item => item.value > 0);
   }, [nodes]);
 
   const availableVersions = useMemo(() => {
@@ -210,359 +227,220 @@ export default function Home() {
   const COLORS = ["#14b8a6", "#0d9488", "#f59e0b", "#a855f7", "#06b6d4"];
 
   return (
-    <div className="min-h-screen bg-[#050b1f]">
-      <div className="max-w-7xl mx-auto p-6">
-        {/* MODERN HEADER */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img
-                src="/logo.png"
-                alt="Xandeum Logo"
-                className="w-10 h-10 md:w-12 md:h-12 object-contain"
-              />
-              <div>
-                <h1 className="text-2xl md:text-3xl font-black text-white mb-0.5">
-                  Xandeum pNode Analytics
-                </h1>
-                <p className="text-[#14b8a6] text-xs font-medium">Real-time DevNet monitoring</p>
+    <div className="min-h-screen bg-[#050b1f] relative">
+      {/* Background Layer 1 - background.jpeg (subtle) */}
+      <div 
+        className="fixed inset-0 z-0 opacity-30"
+        style={{
+          backgroundImage: 'url(/background.jpeg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
+      
+      {/* Background Layer 2 - Xandeum.avif logo pattern (more visible) */}
+      <div 
+        className="fixed inset-0 z-0 opacity-15"
+        style={{
+          backgroundImage: 'url(/Xandeum.avif)',
+          backgroundSize: '200px 200px',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'repeat',
+        }}
+      />
+      
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* TOP NAVIGATION BAR */}
+        <div className="sticky top-0 z-50 -mx-6 backdrop-blur-sm">
+          <div className="px-4 md:px-6 py-3 md:py-4">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-0">
+              {/* Logo */}
+              <div className="flex items-center gap-2 md:gap-3">
+                <img
+                  src="/Xandeum.avif"
+                  alt="Xandeum Logo"
+                  className="w-6 h-6 md:w-8 md:h-8 object-contain"
+                  onError={(e) => {
+                    console.error('Logo failed to load, trying fallback');
+                    e.currentTarget.src = '/logo.png';
+                  }}
+                />
+                <div>
+                  <h1 className="text-sm md:text-lg font-black text-white">
+                    Xandeum pNode Analytics
+                  </h1>
+                  <p className="text-[#14b8a6] text-[10px] font-medium">Real-time DevNet monitoring</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setShowDocs(true)}
-                className="flex items-center gap-1.5 text-[#14b8a6] hover:text-[#0d9488] font-bold transition-all text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Docs
-              </button>
-              {refreshing && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center gap-1.5 text-white text-xs font-medium"
+
+              {/* Navigation Tabs */}
+              <div className="flex items-center gap-3 md:gap-6 overflow-x-auto w-full md:w-auto">
+                <button
+                  onClick={() => setCurrentView("overview")}
+                  className={`px-2 py-2 text-xs md:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
+                    currentView === "overview"
+                      ? "text-[#14b8a6] border-[#14b8a6]"
+                      : "text-gray-400 border-transparent hover:text-white"
+                  }`}
                 >
-                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                  Refreshing...
-                </motion.div>
-              )}
-              <button
-                onClick={() => fetchNodes(true)}
-                className="flex items-center gap-1.5 text-[#14b8a6] hover:text-[#0d9488] font-bold transition-all text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Refresh
-              </button>
+                  Overview
+                </button>
+                <button
+                  onClick={() => setCurrentView("analytics")}
+                  className={`px-2 py-2 text-xs md:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
+                    currentView === "analytics"
+                      ? "text-[#14b8a6] border-[#14b8a6]"
+                      : "text-gray-400 border-transparent hover:text-white"
+                  }`}
+                >
+                  Analytics
+                </button>
+                <button
+                  onClick={() => setCurrentView("docs")}
+                  className={`px-2 py-2 text-xs md:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
+                    currentView === "docs"
+                      ? "text-[#14b8a6] border-[#14b8a6]"
+                      : "text-gray-400 border-transparent hover:text-white"
+                  }`}
+                >
+                  Docs
+                </button>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-2 md:gap-3">
+                {refreshing && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-center gap-1.5 text-white text-xs font-medium"
+                  >
+                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                    Refreshing...
+                  </motion.div>
+                )}
+                <button
+                  onClick={() => fetchNodes(true)}
+                  className="flex items-center gap-1.5 text-[#14b8a6] hover:text-[#0d9488] font-bold transition-all text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Refresh
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* STATS & CHARTS - ONE ROW */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 mb-4">
-          {/* Stats Cards - 3 columns */}
-          <div className="lg:col-span-3 grid grid-cols-2 gap-1.5">
-            {/* Total Nodes */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative group"
-            >
-              <div className="relative bg-[#0d1425] rounded p-1.5 shadow-sm flex flex-col justify-between border border-[#14b8a6]/30">
-                <div className="flex items-center justify-between mb-1">
-                  <svg className="w-3 h-3 text-[#14b8a6]" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                  </svg>
-                  <div className="w-0.5 h-0.5 bg-[#14b8a6] rounded-full animate-pulse"></div>
-                </div>
-                <div>
-                  <div className="text-[6px] font-bold text-[#14b8a6] uppercase tracking-wider">Total</div>
-                  <div className="text-base font-black text-white">{stats.total}</div>
-                </div>
-              </div>
-            </motion.div>
+        {/* MAIN CONTENT AREA */}
+        <div className="p-4 md:p-6">
+          <AnimatePresence mode="wait">
+            {/* OVERVIEW VIEW */}
+            {currentView === "overview" && (
+              <motion.div
+                key="overview"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
 
-            {/* Active Nodes */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              className="relative group"
-            >
-              <div className="relative bg-[#0d1425] rounded p-1.5 shadow-sm flex flex-col justify-between border border-[#14b8a6]/30">
-                <div className="flex items-center justify-between mb-1">
-                  <svg className="w-3 h-3 text-[#14b8a6]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <div className="w-0.5 h-0.5 bg-[#14b8a6] rounded-full animate-pulse"></div>
+                {/* STATS - Ultra Minimal */}
+                <div className="text-sm text-gray-400 mb-4">
+                  <span className="text-white font-medium">{stats.total}</span> nodes · <span className="text-[#14b8a6] font-medium">{stats.active}</span> active · <span className="text-white font-medium">{stats.versions}</span> versions · <span className="text-white font-medium">{stats.uniqueIPs}</span> IPs
                 </div>
-                <div>
-                  <div className="text-[6px] font-bold text-[#14b8a6] uppercase tracking-wider">Active</div>
-                  <div className="text-base font-black text-white">{stats.active}</div>
-                </div>
-              </div>
-            </motion.div>
-            
 
-            {/* Versions */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="relative group"
-            >
-              <div className="relative bg-[#0d1425] rounded p-1.5 shadow-sm flex flex-col justify-between border border-[#14b8a6]/30">
-                <div className="flex items-center justify-between mb-1">
-                  <svg className="w-3 h-3 text-[#14b8a6]" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-                  </svg>
-                  <div className="w-0.5 h-0.5 bg-[#14b8a6] rounded-full animate-pulse"></div>
-                </div>
-                <div>
-                  <div className="text-[6px] font-bold text-[#14b8a6] uppercase tracking-wider">Versions</div>
-                  <div className="text-base font-black text-white">{stats.versions}</div>
-                </div>
-              </div>
-            </motion.div>
-
-
-            {/* Unique IPs */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="relative group"
-            >
-              <div className="relative bg-[#0d1425] rounded p-1.5 shadow-sm flex flex-col justify-between border border-[#14b8a6]/30">
-                <div className="flex items-center justify-between mb-1">
-                  <svg className="w-3 h-3 text-[#14b8a6]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16 8 8 0 000-16zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.56-.5-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.97-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.56.5.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clipRule="evenodd" />
-                  </svg>
-                  <div className="w-0.5 h-0.5 bg-[#14b8a6] rounded-full animate-pulse"></div>
-                </div>
-                <div>
-                  <div className="text-[6px] font-bold text-[#14b8a6] uppercase tracking-wider">IPs</div>
-                  <div className="text-base font-black text-white">{stats.uniqueIPs}</div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Charts - 9 columns */}
-          <div className="lg:col-span-9 grid grid-cols-1 md:grid-cols-2 gap-2">
-            {/* Version Chart with Pie */}
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-[#0d1425] rounded-lg p-2.5 shadow-md border border-[#14b8a6]/30"
-            >
-              <div className="flex items-center gap-1.5 mb-2">
-                <svg className="w-4 h-4 text-[#14b8a6]" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z" />
-                  <path d="M3 7v3c0 1.657 3.134 3 7 3s7-1.343 7-3V7c0 1.657-3.134 3-7 3S3 8.657 3 7z" />
-                  <path d="M17 5c0 1.657-3.134 3-7 3S3 6.657 3 5s3.134-3 7-3 7 1.343 7 3z" />
-                </svg>
-                <h3 className="text-[10px] font-black text-white">Top Versions</h3>
-              </div>
-              <ResponsiveContainer width="100%" height={120}>
-                <PieChart>
-                  <Pie
-                    data={versionData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={40}
-                    innerRadius={25}
-                    fill="#000000"
-                    dataKey="value"
-                    paddingAngle={2}
-                  >
-                    {versionData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="mt-1.5 space-y-1">
-                {versionData.slice(0, 3).map((item, index) => (
-                  <div key={index} className="flex items-center justify-between bg-[#050b1f] rounded px-2 py-1 border border-[#14b8a6]/10">
-                    <div className="flex items-center gap-1">
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: COLORS[index] }}></div>
-                      <span className="text-[9px] font-bold text-gray-300">{item.name}</span>
-                    </div>
-                    <span className="text-[9px] font-black text-white">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Activity Timeline with Graph */}
-            <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.25 }}
-              className="bg-[#0d1425] rounded-lg p-2.5 shadow-md border border-[#14b8a6]/30"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-1.5">
-                  <svg className="w-4 h-4 text-[#14b8a6]" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                  </svg>
-                  <h3 className="text-[10px] font-black text-white">Network Activity</h3>
-                </div>
-                <div className="flex items-center gap-0.5 bg-[#050b1f] px-1.5 py-0.5 rounded-full border border-[#14b8a6]/30">
-                  <div className="text-[7px] font-black text-[#14b8a6]">LIVE</div>
-                  <div className="w-0.5 h-0.5 bg-[#14b8a6] rounded-full animate-pulse"></div>
-                </div>
-              </div>
-              <ResponsiveContainer width="100%" height={120}>
-                <LineChart data={activityData} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                  <defs>
-                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis
-                    dataKey="time"
-                    stroke="#9ca3af"
-                    tick={{ fontSize: 8, fill: '#6b7280' }}
-                    axisLine={{ stroke: '#e5e7eb' }}
-                  />
-                  <YAxis
-                    stroke="#9ca3af"
-                    tick={{ fontSize: 8, fill: '#6b7280' }}
-                    axisLine={{ stroke: '#e5e7eb' }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="count"
-                    stroke="#14b8a6"
-                    strokeWidth={2}
-                    dot={{ fill: "#14b8a6", r: 2, strokeWidth: 1.5, stroke: "#fff" }}
-                    activeDot={{ r: 4, strokeWidth: 1.5 }}
-                    fill="url(#colorCount)"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-              <div className="mt-1.5 grid grid-cols-3 gap-1.5">
-                <div className="bg-[#050b1f] rounded p-1.5 text-center border border-[#14b8a6]/10">
-                  <div className="text-[7px] text-[#14b8a6] font-bold mb-0.5">NOW</div>
-                  <div className="text-sm font-black text-white">{activityData[0]?.count || 0}</div>
-                </div>
-                <div className="bg-[#050b1f] rounded p-1.5 text-center border border-[#14b8a6]/10">
-                  <div className="text-[7px] text-[#14b8a6] font-bold mb-0.5">60s</div>
-                  <div className="text-sm font-black text-white">{activityData[2]?.count || 0}</div>
-                </div>
-                <div className="bg-[#050b1f] rounded p-1.5 text-center border border-[#14b8a6]/10">
-                  <div className="text-[7px] text-[#14b8a6] font-bold mb-0.5">600s</div>
-                  <div className="text-sm font-black text-white">{activityData[5]?.count || 0}</div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-
-        {/* FILTER BAR */}
-        <div className="bg-[#0d1425] rounded-xl p-6 shadow-lg mb-6 border border-[#14b8a6]/30">
-          <div className="flex flex-wrap gap-3 mb-4">
+                {/* SLIM FILTER TOOLBAR */}
+        <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-4 py-2">
+          {/* Status Filters - Pill Style */}
+          <div className="flex items-center gap-1.5 md:gap-2">
             <button
               onClick={() => setFilterStatus("all")}
-              className={`px-4 py-2 rounded-lg font-semibold transition-all ${filterStatus === "all"
-                ? "bg-gradient-to-r from-[#14b8a6] to-[#0d9488] text-white shadow-md"
-                : "bg-[#050b1f] text-white hover:bg-[#050b1f]/80 border border-[#14b8a6]/20"
-                }`}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                filterStatus === "all"
+                  ? "bg-[#14b8a6] text-white"
+                  : "text-gray-400 hover:text-white hover:bg-[#14b8a6]/10"
+              }`}
             >
               All
             </button>
             <button
               onClick={() => setFilterStatus("active")}
-              className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${filterStatus === "active"
-                ? "bg-gradient-to-r from-[#14b8a6] to-[#0d9488] text-white shadow-md"
-                : "bg-[#050b1f] text-white hover:bg-[#050b1f]/80 border border-[#14b8a6]/20"
-                }`}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                filterStatus === "active"
+                  ? "bg-[#14b8a6] text-white"
+                  : "text-gray-400 hover:text-white hover:bg-[#14b8a6]/10"
+              }`}
             >
               Active
             </button>
             <button
               onClick={() => setFilterStatus("warning")}
-              className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${filterStatus === "warning"
-                ? "bg-gradient-to-r from-[#14b8a6] to-[#0d9488] text-white shadow-md"
-                : "bg-[#050b1f] text-white hover:bg-[#050b1f]/80 border border-[#14b8a6]/20"
-                }`}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                filterStatus === "warning"
+                  ? "bg-[#14b8a6] text-white"
+                  : "text-gray-400 hover:text-white hover:bg-[#14b8a6]/10"
+              }`}
             >
               Warning
             </button>
             <button
               onClick={() => setFilterStatus("offline")}
-              className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${filterStatus === "offline"
-                ? "bg-gradient-to-r from-[#14b8a6] to-[#0d9488] text-white shadow-md"
-                : "bg-[#050b1f] text-white hover:bg-[#050b1f]/80 border border-[#14b8a6]/20"
-                }`}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                filterStatus === "offline"
+                  ? "bg-[#14b8a6] text-white"
+                  : "text-gray-400 hover:text-white hover:bg-[#14b8a6]/10"
+              }`}
             >
               Offline
             </button>
-
-            <div className="h-8 w-px bg-gray-300 mx-2"></div>
-
-            <select
-              value={filterVersion}
-              onChange={(e) => setFilterVersion(e.target.value)}
-              className="px-4 py-2 rounded-lg font-semibold bg-[#050b1f] text-white hover:bg-[#050b1f]/80 transition-all border border-[#14b8a6]/20 outline-none cursor-pointer"
-            >
-              <option value="all">All Versions</option>
-              {availableVersions.map((version) => (
-                <option key={version} value={version}>
-                  {version}
-                </option>
-              ))}
-            </select>
-
-            <div className="h-8 w-px bg-gray-300 mx-2"></div>
-
-            <button
-              onClick={() => setShowMyNodeInput(!showMyNodeInput)}
-              className={`px-4 py-2 rounded-lg font-semibold transition-all ${myNodePubkey
-                ? "bg-gradient-to-r from-[#14b8a6] to-[#0d9488] text-white shadow-md"
-                : "bg-[#050b1f] text-white hover:bg-[#050b1f]/80 border border-[#14b8a6]/20"
-                }`}
-            >
-              My Node
-            </button>
           </div>
 
-          {showMyNodeInput && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="mt-4"
-            >
-              <input
-                type="text"
-                placeholder="Enter your node's public key..."
-                value={myNodePubkey}
-                onChange={(e) => setMyNodePubkey(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border-2 border-[#14b8a6]/30 bg-[#050b1f] focus:border-[#14b8a6] outline-none font-mono text-sm text-white placeholder-gray-400"
-              />
-            </motion.div>
-          )}
+          <div className="hidden md:block h-4 w-px bg-[#14b8a6]/20"></div>
 
-          <div className="relative mt-4">
+          {/* Version Dropdown */}
+          <select
+            value={filterVersion}
+            onChange={(e) => setFilterVersion(e.target.value)}
+            className="px-3 py-1.5 rounded-full text-xs font-medium bg-transparent text-gray-400 hover:text-white border border-[#14b8a6]/20 outline-none cursor-pointer transition-all"
+          >
+            <option value="all" className="bg-[#0d1425] text-white">All Versions</option>
+            {availableVersions.map((version) => (
+              <option key={version} value={version} className="bg-[#0d1425] text-white">
+                {version}
+              </option>
+            ))}
+          </select>
+
+          <div className="hidden md:block h-4 w-px bg-[#14b8a6]/20"></div>
+
+          {/* My Node Button */}
+          <button
+            onClick={() => setShowMyNodeInput(!showMyNodeInput)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              myNodePubkey
+                ? "bg-[#14b8a6] text-white"
+                : "text-gray-400 hover:text-white border border-[#14b8a6]/20"
+            }`}
+          >
+            My Node
+          </button>
+
+          {/* Search Input */}
+          <div className="relative flex-1 min-w-[200px]">
             <input
               type="text"
-              placeholder="🔍 Search by public key, IP address, or city..."
+              placeholder="Search by public key, IP, or city..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border-2 border-[#14b8a6]/30 bg-[#050b1f] focus:border-[#14b8a6] outline-none font-medium text-white placeholder-gray-400"
+              className="w-full px-3 py-1.5 rounded-full text-xs bg-transparent border border-[#14b8a6]/20 focus:border-[#14b8a6]/40 outline-none text-white placeholder-gray-500 transition-all"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white hover:text-gray-400 font-bold text-xl"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-sm"
               >
                 ✕
               </button>
@@ -570,36 +448,53 @@ export default function Home() {
           </div>
         </div>
 
+        {/* My Node Input (Collapsible) */}
+        {showMyNodeInput && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="mb-3"
+          >
+            <input
+              type="text"
+              placeholder="Enter your node's public key..."
+              value={myNodePubkey}
+              onChange={(e) => setMyNodePubkey(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg text-xs bg-[#0d1425]/50 border border-[#14b8a6]/20 focus:border-[#14b8a6]/40 outline-none font-mono text-white placeholder-gray-500"
+            />
+          </motion.div>
+        )}
+
         {/* TABLE */}
-        <div className="bg-[#0d1425] rounded-xl shadow-lg overflow-hidden mb-8 border border-[#14b8a6]/30">
+        <div className="bg-[#0d1425]/95 rounded-xl overflow-hidden border border-[#14b8a6]/20">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#050b1f] sticky top-0 border-b border-[#14b8a6]/30">
+              <thead className="bg-[#0d1425] sticky top-0 border-b-2 border-[#14b8a6]/40">
                 <tr>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-white uppercase tracking-wider">
+                  <th className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-bold text-white uppercase tracking-wider">
                     Status
                   </th>
                   <th
                     onClick={() => handleSort("pubkey")}
-                    className="text-left px-6 py-4 text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
+                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     Public Key {sortField === "pubkey" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
                   <th
                     onClick={() => handleSort("address")}
-                    className="text-left px-6 py-4 text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
+                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     Address {sortField === "address" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
                   <th
                     onClick={() => handleSort("version")}
-                    className="text-left px-6 py-4 text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
+                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     Version {sortField === "version" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
                   <th
                     onClick={() => handleSort("uptime")}
-                    className="text-left px-6 py-4 text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
+                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     Uptime {sortField === "uptime" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
@@ -681,37 +576,159 @@ export default function Home() {
             </table>
           </div>
         </div>
-      </div>
+              </motion.div>
+            )}
 
-      {/* DOCS MODAL */}
-      <AnimatePresence>
-        {showDocs && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowDocs(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            >
-              <div className="bg-[#0d1425] rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-[#14b8a6]/30">
-                <div className="sticky top-0 bg-[#0d1425] border-b border-[#14b8a6]/30 p-6 flex items-center justify-between">
-                  <h2 className="text-3xl font-black text-white">Xandeum Analytics Documentation</h2>
-                  <button
-                    onClick={() => setShowDocs(false)}
-                    className="text-[#14b8a6] hover:text-[#0d9488] transition-colors text-2xl font-bold"
-                  >
-                    ✕
-                  </button>
+            {/* ANALYTICS VIEW - Timeline & Charts Only */}
+            {currentView === "analytics" && (
+              <motion.div
+                key="analytics"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* Single Container Box */}
+                <div className="bg-[#0d1425]/60 backdrop-blur-sm rounded-xl p-6 border border-[#14b8a6]/20">
+                  
+                  {/* Activity Timeline */}
+                  <div className="mb-6">
+                    <h3 className="text-sm font-semibold text-gray-300 mb-3">Activity Timeline</h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart data={activityData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+                        <defs>
+                          <linearGradient id="colorCountFull" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <XAxis
+                          dataKey="time"
+                          stroke="#6b7280"
+                          tick={{ fontSize: 11, fill: '#9ca3af' }}
+                          axisLine={{ stroke: '#374151' }}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          stroke="#6b7280"
+                          tick={{ fontSize: 11, fill: '#9ca3af' }}
+                          axisLine={{ stroke: '#374151' }}
+                          tickLine={false}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#1f2937',
+                            border: '1px solid #14b8a6',
+                            borderRadius: '6px',
+                            fontSize: '12px'
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="count"
+                          stroke="#14b8a6"
+                          strokeWidth={2.5}
+                          dot={{ fill: "#14b8a6", r: 4, strokeWidth: 2, stroke: "#fff" }}
+                          activeDot={{ r: 6 }}
+                          fill="url(#colorCountFull)"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="border-t border-gray-700/50 my-6"></div>
+
+                  {/* Distribution Charts */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-300 mb-4">Distribution</h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      
+                      {/* Version Distribution */}
+                      <div>
+                        <div className="text-xs text-gray-400 mb-2 text-center">Version</div>
+                        <ResponsiveContainer width="100%" height={200}>
+                          <PieChart>
+                            <Pie
+                              data={versionData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              outerRadius={70}
+                              innerRadius={45}
+                              fill="#000000"
+                              dataKey="value"
+                              paddingAngle={2}
+                              label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                            >
+                              {versionData.map((_, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: '#1f2937',
+                                border: '1px solid #14b8a6',
+                                borderRadius: '6px',
+                                fontSize: '12px'
+                              }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      {/* Status Distribution */}
+                      <div>
+                        <div className="text-xs text-gray-400 mb-2 text-center">Status</div>
+                        <ResponsiveContainer width="100%" height={200}>
+                          <PieChart>
+                            <Pie
+                              data={statusData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              outerRadius={70}
+                              innerRadius={45}
+                              fill="#000000"
+                              dataKey="value"
+                              paddingAngle={2}
+                              label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                            >
+                              {statusData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: '#1f2937',
+                                border: '1px solid #14b8a6',
+                                borderRadius: '6px',
+                                fontSize: '12px'
+                              }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
+              </motion.div>
+            )}
 
-                <div className="p-8 space-y-8">
+            {/* DOCS VIEW */}
+            {currentView === "docs" && (
+              <motion.div
+                key="docs"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="bg-[#0d1425]/95 backdrop-blur-sm rounded-xl p-8 border border-[#14b8a6]/20 max-w-4xl mx-auto">
+                  <h2 className="text-3xl font-black text-white mb-6">Documentation</h2>
+
+                  <div className="space-y-8">
                   {/* Overview */}
                   <section>
                     <h3 className="text-xl font-bold text-[#14b8a6] mb-3">Overview</h3>
@@ -814,32 +831,140 @@ export default function Home() {
                     </div>
                   </section>
 
-                  {/* Support */}
+                  {/* FAQ */}
                   <section>
-                    <h3 className="text-xl font-bold text-[#14b8a6] mb-3">Support</h3>
-                    <p className="text-gray-300 mb-3 text-sm">
-                      For issues or questions about Xandeum pNode Analytics, please visit the Xandeum community channels or check the project repository.
-                    </p>
-                    <div className="bg-[#050b1f] p-3 rounded-lg border border-[#14b8a6]/20">
-                      <p className="text-gray-300 text-sm mb-2">Learn more about Xandeum:</p>
-                      <a 
-                        href="https://www.xandeum.network/" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-[#14b8a6] hover:text-[#0d9488] underline font-semibold text-sm"
-                      >
-                        https://www.xandeum.network/
-                      </a>
+                    <h3 className="text-xl font-bold text-[#14b8a6] mb-3">Frequently Asked Questions</h3>
+                    <div className="space-y-3">
+                      <details className="bg-[#050b1f] p-4 rounded-lg border border-[#14b8a6]/20 group">
+                        <summary className="font-bold text-white text-sm cursor-pointer hover:text-[#14b8a6] transition-colors">
+                          What is a pNode?
+                        </summary>
+                        <p className="text-gray-300 text-sm mt-2 leading-relaxed">
+                          A pNode (Participant Node) is a node in the Xandeum network that participates in consensus and validation. pNodes help secure the network and process transactions.
+                        </p>
+                      </details>
+
+                      <details className="bg-[#050b1f] p-4 rounded-lg border border-[#14b8a6]/20 group">
+                        <summary className="font-bold text-white text-sm cursor-pointer hover:text-[#14b8a6] transition-colors">
+                          How do I run my own pNode?
+                        </summary>
+                        <p className="text-gray-300 text-sm mt-2 leading-relaxed">
+                          Visit the official Xandeum documentation at xandeum.network for detailed instructions on setting up and running your own pNode. You'll need to meet the minimum hardware requirements and follow the installation guide.
+                        </p>
+                      </details>
+
+                      <details className="bg-[#050b1f] p-4 rounded-lg border border-[#14b8a6]/20 group">
+                        <summary className="font-bold text-white text-sm cursor-pointer hover:text-[#14b8a6] transition-colors">
+                          Why is my node showing as "Warning" or "Offline"?
+                        </summary>
+                        <p className="text-gray-300 text-sm mt-2 leading-relaxed">
+                          Nodes are marked as "Warning" if they haven't been seen in 30-120 seconds, and "Offline" if not seen for over 2 minutes. This could be due to network issues, node downtime, or synchronization problems. Check your node's logs and network connectivity.
+                        </p>
+                      </details>
+
+                      <details className="bg-[#050b1f] p-4 rounded-lg border border-[#14b8a6]/20 group">
+                        <summary className="font-bold text-white text-sm cursor-pointer hover:text-[#14b8a6] transition-colors">
+                          What does "Uptime" percentage mean?
+                        </summary>
+                        <p className="text-gray-300 text-sm mt-2 leading-relaxed">
+                          The uptime percentage is calculated based on a 5-minute rolling window. It shows how recently your node was active. A node last seen 30 seconds ago will show ~90% uptime, while a node seen just now shows 100%.
+                        </p>
+                      </details>
+
+                      <details className="bg-[#050b1f] p-4 rounded-lg border border-[#14b8a6]/20 group">
+                        <summary className="font-bold text-white text-sm cursor-pointer hover:text-[#14b8a6] transition-colors">
+                          How often is the data updated?
+                        </summary>
+                        <p className="text-gray-300 text-sm mt-2 leading-relaxed">
+                          The dashboard automatically refreshes every 30 seconds to fetch the latest node data from the Xandeum DevNet. You can also manually refresh using the "Refresh" button in the navigation bar.
+                        </p>
+                      </details>
+
+                      <details className="bg-[#050b1f] p-4 rounded-lg border border-[#14b8a6]/20 group">
+                        <summary className="font-bold text-white text-sm cursor-pointer hover:text-[#14b8a6] transition-colors">
+                          Can I track multiple nodes?
+                        </summary>
+                        <p className="text-gray-300 text-sm mt-2 leading-relaxed">
+                          Currently, the "My Node" feature tracks one node at a time. You can change the tracked node by entering a different public key. For monitoring multiple nodes, use the search function or bookmark specific filtered views.
+                        </p>
+                      </details>
+
+                      <details className="bg-[#050b1f] p-4 rounded-lg border border-[#14b8a6]/20 group">
+                        <summary className="font-bold text-white text-sm cursor-pointer hover:text-[#14b8a6] transition-colors">
+                          What are the different node versions?
+                        </summary>
+                        <p className="text-gray-300 text-sm mt-2 leading-relaxed">
+                          Node versions represent different software releases of the Xandeum client. Running the latest version ensures you have the newest features, bug fixes, and security updates. Check the Analytics page to see version distribution across the network.
+                        </p>
+                      </details>
+
+                      <details className="bg-[#050b1f] p-4 rounded-lg border border-[#14b8a6]/20 group">
+                        <summary className="font-bold text-white text-sm cursor-pointer hover:text-[#14b8a6] transition-colors">
+                          Is this data real-time?
+                        </summary>
+                        <p className="text-gray-300 text-sm mt-2 leading-relaxed">
+                          Yes! All data is fetched directly from the Xandeum DevNet using pRPC (Participant RPC). The dashboard shows actual node data with no mock or simulated information. Geographic data is cached for 24 hours to improve performance.
+                        </p>
+                      </details>
                     </div>
                   </section>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
-      {/* SIDE PANEL */}
+                  {/* Quick Tips */}
+                  <section>
+                    <h3 className="text-xl font-bold text-[#14b8a6] mb-3">Quick Tips</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="bg-[#050b1f] p-3 rounded-lg border border-[#14b8a6]/20">
+                        <div className="text-white font-bold text-sm mb-1">Keyboard Shortcuts</div>
+                        <p className="text-gray-300 text-xs">Click column headers to sort, use search to quickly find nodes</p>
+                      </div>
+                      <div className="bg-[#050b1f] p-3 rounded-lg border border-[#14b8a6]/20">
+                        <div className="text-white font-bold text-sm mb-1">Analytics View</div>
+                        <p className="text-gray-300 text-xs">Check the Analytics tab for timeline and distribution charts</p>
+                      </div>
+                      <div className="bg-[#050b1f] p-3 rounded-lg border border-[#14b8a6]/20">
+                        <div className="text-white font-bold text-sm mb-1">Advanced Search</div>
+                        <p className="text-gray-300 text-xs">Search works on public keys, IPs, and city names simultaneously</p>
+                      </div>
+                      <div className="bg-[#050b1f] p-3 rounded-lg border border-[#14b8a6]/20">
+                        <div className="text-white font-bold text-sm mb-1">Mobile Friendly</div>
+                        <p className="text-gray-300 text-xs">Fully responsive design works on all devices and screen sizes</p>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Support & Links */}
+                  <section>
+                    <h3 className="text-xl font-bold text-[#14b8a6] mb-3">Resources & Support</h3>
+                    <div className="space-y-3">
+                      <div className="bg-[#050b1f] p-4 rounded-lg border border-[#14b8a6]/20">
+                        <div className="font-bold text-white text-sm mb-2">Official Website</div>
+                        <a 
+                          href="https://www.xandeum.network/" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-[#14b8a6] hover:text-[#0d9488] underline text-sm"
+                        >
+                          xandeum.network
+                        </a>
+                      </div>
+                      <div className="bg-[#050b1f] p-4 rounded-lg border border-[#14b8a6]/20">
+                        <div className="font-bold text-white text-sm mb-2">Documentation</div>
+                        <p className="text-gray-300 text-sm">Visit the official Xandeum documentation for setup guides, API references, and technical specifications.</p>
+                      </div>
+                      <div className="bg-[#050b1f] p-4 rounded-lg border border-[#14b8a6]/20">
+                        <div className="font-bold text-white text-sm mb-2">Community</div>
+                        <p className="text-gray-300 text-sm">Join the Xandeum community channels for support, discussions, and updates from the core team.</p>
+                      </div>
+                    </div>
+                    </section>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* SIDE PANEL */}
       <AnimatePresence>
         {selectedNode && (
           <>
@@ -855,7 +980,7 @@ export default function Home() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed right-0 top-0 h-full w-full md:w-[600px] bg-[#0d1425] z-50 overflow-y-auto shadow-2xl border-l border-[#14b8a6]/30"
+              className="fixed right-0 top-0 h-full w-full md:w-[600px] bg-[#0d1425]/98 backdrop-blur-md z-50 overflow-y-auto shadow-2xl border-l border-[#14b8a6]/30"
             >
               <div className="p-8">
                 <div className="flex items-center justify-between mb-8">
@@ -982,6 +1107,7 @@ export default function Home() {
           </>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }
