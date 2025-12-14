@@ -31,8 +31,6 @@ export default function Home() {
   const [refreshing, setRefreshing] = useState(false);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [filterVersion, setFilterVersion] = useState<string>("all");
-  const [myNodePubkey, setMyNodePubkey] = useState("");
-  const [showMyNodeInput, setShowMyNodeInput] = useState(false);
   const [currentView, setCurrentView] = useState<ViewMode>("overview");
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
   const [showDocsModal, setShowDocsModal] = useState(false);
@@ -143,6 +141,8 @@ export default function Home() {
   }, [nodes]);
 
   const filteredAndSortedNodes = useMemo(() => {
+    console.log('Filtering with status:', filterStatus);
+    
     let filtered = nodes.filter((node) => {
       const matchesSearch = node.pubkey?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         node.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -155,6 +155,8 @@ export default function Home() {
 
       return matchesSearch && matchesStatus && matchesVersion;
     });
+    
+    console.log('Filtered nodes count:', filtered.length, 'from', nodes.length);
 
     filtered.sort((a, b) => {
       let aVal: string | number = "";
@@ -342,6 +344,14 @@ export default function Home() {
                 {/* STATS - Ultra Minimal */}
                 <div className="text-sm text-gray-400 mb-4">
                   <span className="text-white font-medium">{stats.total}</span> nodes · <span className="text-[#14b8a6] font-medium">{stats.active}</span> active · <span className="text-white font-medium">{stats.versions}</span> versions · <span className="text-white font-medium">{stats.uniqueIPs}</span> IPs
+                  {(filterStatus !== "all" || filterVersion !== "all") && (
+                    <span className="ml-2 text-yellow-500">
+                      · Showing {filteredAndSortedNodes.length} 
+                      {filterStatus !== "all" && ` ${filterStatus}`}
+                      {filterVersion !== "all" && ` v${filterVersion}`}
+                      {" "}nodes
+                    </span>
+                  )}
                 </div>
 
                 {/* SLIM FILTER TOOLBAR */}
@@ -406,20 +416,6 @@ export default function Home() {
             ))}
           </select>
 
-          <div className="hidden md:block h-4 w-px bg-[#14b8a6]/20"></div>
-
-          {/* My Node Button */}
-          <button
-            onClick={() => setShowMyNodeInput(!showMyNodeInput)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              myNodePubkey
-                ? "bg-[#14b8a6] text-white"
-                : "text-gray-400 hover:text-white border border-[#14b8a6]/20"
-            }`}
-          >
-            My Node
-          </button>
-
           {/* Search Input */}
           <div className="relative flex-1 min-w-[200px]">
             <input
@@ -439,23 +435,6 @@ export default function Home() {
             )}
           </div>
         </div>
-
-        {/* My Node Input (Collapsible) */}
-        {showMyNodeInput && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            className="mb-3"
-          >
-            <input
-              type="text"
-              placeholder="Enter your node's public key..."
-              value={myNodePubkey}
-              onChange={(e) => setMyNodePubkey(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg text-xs bg-[#0d1425]/50 border border-[#14b8a6]/20 focus:border-[#14b8a6]/40 outline-none font-mono text-white placeholder-gray-500"
-            />
-          </motion.div>
-        )}
 
         {/* TABLE */}
         <div className="bg-[#0d1425]/95 rounded-xl overflow-hidden border border-[#14b8a6]/20">
@@ -505,20 +484,21 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#14b8a6]/10">
+                <AnimatePresence mode="popLayout">
                 {filteredAndSortedNodes.map((node, index) => {
                   const health = getNodeHealth(node.last_seen_timestamp);
                   const uptimePercent = getUptimePercentage(node.last_seen_timestamp);
-                  const isMyNode = myNodePubkey && node.pubkey?.includes(myNodePubkey);
 
                   return (
                     <motion.tr
-                      key={node.pubkey || index}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.02 }}
+                      key={node.pubkey || `node-${index}`}
+                      layout
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
                       onClick={() => setSelectedNode(node)}
-                      className={`cursor-pointer hover:bg-white/5 transition-all ${isMyNode ? "bg-white/10" : ""
-                        }`}
+                      className="cursor-pointer hover:bg-white/5 transition-all"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
@@ -564,6 +544,7 @@ export default function Home() {
                     </motion.tr>
                   );
                 })}
+                </AnimatePresence>
               </tbody>
             </table>
           </div>
