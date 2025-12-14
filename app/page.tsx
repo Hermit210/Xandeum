@@ -141,8 +141,6 @@ export default function Home() {
   }, [nodes]);
 
   const filteredAndSortedNodes = useMemo(() => {
-    console.log('Filtering with status:', filterStatus);
-    
     let filtered = nodes.filter((node) => {
       const matchesSearch = node.pubkey?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         node.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -155,8 +153,6 @@ export default function Home() {
 
       return matchesSearch && matchesStatus && matchesVersion;
     });
-    
-    console.log('Filtered nodes count:', filtered.length, 'from', nodes.length);
 
     filtered.sort((a, b) => {
       let aVal: string | number = "";
