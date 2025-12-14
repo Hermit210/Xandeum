@@ -107,8 +107,8 @@ export default function Home() {
     });
     return Object.entries(versionCounts)
       .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 5);
+      .sort((a, b) => b.value - a.value);
+      // Show ALL versions, not just top 5
   }, [nodes]);
 
   const activityData = useMemo(() => {
@@ -228,7 +228,20 @@ export default function Home() {
     );
   }
 
-  const COLORS = ["#14b8a6", "#0d9488", "#f59e0b", "#a855f7", "#06b6d4"];
+  const COLORS = [
+    "#14b8a6", // Teal
+    "#0d9488", // Dark teal
+    "#f59e0b", // Amber
+    "#a855f7", // Purple
+    "#06b6d4", // Cyan
+    "#10b981", // Emerald
+    "#f97316", // Orange
+    "#8b5cf6", // Violet
+    "#ec4899", // Pink
+    "#6366f1", // Indigo
+    "#84cc16", // Lime
+    "#f43f5e", // Rose
+  ];
 
   return (
     <div className="min-h-screen bg-[#050b1f] relative">
@@ -1236,8 +1249,8 @@ export default function Home() {
                             </PieChart>
                           </ResponsiveContainer>
                         </div>
-                        <div className="flex-1 space-y-1.5">
-                          {versionData.slice(0, 4).map((item, index) => (
+                        <div className="flex-1 space-y-1.5 max-h-[130px] overflow-y-auto">
+                          {versionData.map((item, index) => (
                             <div key={index} className="flex items-center justify-between text-xs">
                               <div className="flex items-center gap-2">
                                 <div 
