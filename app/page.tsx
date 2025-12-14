@@ -449,8 +449,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* TABLE */}
-        <div className="bg-[#0d1425]/95 rounded-xl overflow-hidden border border-[#14b8a6]/20">
+        {/* TABLE - Desktop View */}
+        <div className="hidden md:block bg-[#0d1425]/95 rounded-xl overflow-hidden border border-[#14b8a6]/20">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-[#0d1425] sticky top-0 border-b-2 border-[#14b8a6]/40">
@@ -484,7 +484,7 @@ export default function Home() {
                   </th>
                   <th
                     onClick={() => handleSort("city")}
-                    className="text-left px-6 py-4 text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
+                    className="hidden lg:table-cell text-left px-6 py-4 text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     City {sortField === "city" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
@@ -546,7 +546,7 @@ export default function Home() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="hidden lg:table-cell px-6 py-4">
                         <span className="text-sm font-medium text-white">{node.city || "Unknown"}</span>
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -561,6 +561,77 @@ export default function Home() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* MOBILE CARD VIEW */}
+        <div className="md:hidden space-y-3">
+          <AnimatePresence mode="popLayout">
+          {filteredAndSortedNodes.map((node, index) => {
+            const health = getNodeHealth(node.last_seen_timestamp);
+            const uptimePercent = getUptimePercentage(node.last_seen_timestamp);
+
+            return (
+              <motion.div
+                key={node.pubkey || `node-${index}`}
+                layout
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => setSelectedNode(node)}
+                className="bg-[#0d1425]/95 rounded-lg p-4 border border-[#14b8a6]/20 cursor-pointer hover:bg-white/5 transition-all"
+              >
+                {/* Status and Version Row */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${health.color}`}></div>
+                    <span className={`text-xs font-bold ${health.textColor}`}>{health.label}</span>
+                  </div>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gradient-to-r from-[#14b8a6] to-[#0d9488] text-white">
+                    {node.version}
+                  </span>
+                </div>
+
+                {/* Public Key */}
+                <div className="mb-2">
+                  <div className="text-[10px] text-gray-400 mb-1">Public Key</div>
+                  <div className="font-mono text-xs text-white break-all">
+                    {node.pubkey ? `${node.pubkey.slice(0, 12)}...${node.pubkey.slice(-8)}` : "N/A"}
+                  </div>
+                </div>
+
+                {/* Address and City */}
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <div>
+                    <div className="text-[10px] text-gray-400 mb-1">Address</div>
+                    <div className="text-xs text-white">{node.address}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-gray-400 mb-1">City</div>
+                    <div className="text-xs text-white">{node.city || "Unknown"}</div>
+                  </div>
+                </div>
+
+                {/* Uptime and Last Seen */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="text-[10px] text-gray-400">Uptime:</div>
+                    <div className="flex-1 bg-white/20 rounded-full h-1.5 overflow-hidden max-w-[80px]">
+                      <div
+                        className={`h-full transition-all ${uptimePercent > 75 ? "bg-green-500" : uptimePercent > 30 ? "bg-yellow-500" : "bg-red-500"}`}
+                        style={{ width: `${uptimePercent}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs font-bold text-white">{uptimePercent.toFixed(0)}%</span>
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {getTimeSince(node.last_seen_timestamp)} ago
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+          </AnimatePresence>
         </div>
               </motion.div>
             )}
@@ -978,9 +1049,9 @@ export default function Home() {
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
               className="fixed right-0 top-0 h-full w-full md:w-[600px] bg-[#0d1425]/98 backdrop-blur-md z-50 overflow-y-auto shadow-2xl border-l border-[#14b8a6]/30"
             >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#14b8a6]/30">
-                  <h2 className="text-2xl font-black text-white">Node Details</h2>
+              <div className="p-4 md:p-6">
+                <div className="flex items-center justify-between mb-4 md:mb-6 pb-3 md:pb-4 border-b border-[#14b8a6]/30">
+                  <h2 className="text-xl md:text-2xl font-black text-white">Node Details</h2>
                   <button
                     onClick={() => setSelectedNode(null)}
                     className="text-[#14b8a6] hover:text-[#0d9488] transition-colors text-2xl font-bold"
