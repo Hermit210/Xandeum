@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Area, AreaChart } from "recharts";
 
 type Node = {
   address: string;
@@ -34,6 +34,8 @@ export default function Home() {
   const [myNodePubkey, setMyNodePubkey] = useState("");
   const [showMyNodeInput, setShowMyNodeInput] = useState(false);
   const [currentView, setCurrentView] = useState<ViewMode>("overview");
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
+  const [showDocsModal, setShowDocsModal] = useState(false);
 
   const fetchNodes = async (showRefresh = false) => {
     try {
@@ -254,8 +256,8 @@ export default function Home() {
         {/* TOP NAVIGATION BAR */}
         <div className="sticky top-0 z-50 -mx-6 backdrop-blur-sm">
           <div className="px-4 md:px-6 py-3 md:py-4">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-0">
-              {/* Logo */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 w-full">
+              {/* Left Side - Logo */}
               <div className="flex items-center gap-2 md:gap-3">
                 <img
                   src="/Xandeum.avif"
@@ -274,42 +276,32 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Navigation Tabs */}
-              <div className="flex items-center gap-3 md:gap-6 overflow-x-auto w-full md:w-auto">
-                <button
-                  onClick={() => setCurrentView("overview")}
-                  className={`px-2 py-2 text-xs md:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-                    currentView === "overview"
-                      ? "text-[#14b8a6] border-[#14b8a6]"
-                      : "text-gray-400 border-transparent hover:text-white"
-                  }`}
-                >
-                  Overview
-                </button>
-                <button
-                  onClick={() => setCurrentView("analytics")}
-                  className={`px-2 py-2 text-xs md:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-                    currentView === "analytics"
-                      ? "text-[#14b8a6] border-[#14b8a6]"
-                      : "text-gray-400 border-transparent hover:text-white"
-                  }`}
-                >
-                  Analytics
-                </button>
-                <button
-                  onClick={() => setCurrentView("docs")}
-                  className={`px-2 py-2 text-xs md:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-                    currentView === "docs"
-                      ? "text-[#14b8a6] border-[#14b8a6]"
-                      : "text-gray-400 border-transparent hover:text-white"
-                  }`}
-                >
-                  Docs
-                </button>
-              </div>
-
-              {/* Actions */}
+              {/* Right Side - Navigation Tabs and Actions */}
               <div className="flex items-center gap-2 md:gap-3">
+                <div className="flex items-center gap-3 md:gap-6 overflow-x-auto">
+                  <button
+                    onClick={() => setCurrentView("overview")}
+                    className={`px-2 py-2 text-xs md:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
+                      currentView === "overview"
+                        ? "text-[#14b8a6] border-[#14b8a6]"
+                        : "text-gray-400 border-transparent hover:text-white"
+                    }`}
+                  >
+                    Overview
+                  </button>
+                  <button
+                    onClick={() => setShowAnalyticsModal(true)}
+                    className="px-2 py-2 text-xs md:text-sm font-bold transition-all border-b-2 whitespace-nowrap text-gray-400 border-transparent hover:text-white"
+                  >
+                    Analytics
+                  </button>
+                  <button
+                    onClick={() => setShowDocsModal(true)}
+                    className="px-2 py-2 text-xs md:text-sm font-bold transition-all border-b-2 whitespace-nowrap text-gray-400 border-transparent hover:text-white"
+                  >
+                    Docs
+                  </button>
+                </div>
                 {refreshing && (
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
@@ -579,145 +571,155 @@ export default function Home() {
               </motion.div>
             )}
 
-            {/* ANALYTICS VIEW - Timeline & Charts Only */}
-            {currentView === "analytics" && (
+            {/* ANALYTICS VIEW REMOVED - NOW A MODAL */}
+            {false && currentView === "analytics" && (
               <motion.div
                 key="analytics"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
+                className="max-w-6xl mx-auto"
               >
-                {/* Single Container Box */}
-                <div className="bg-[#0d1425]/60 backdrop-blur-sm rounded-xl p-6 border border-[#14b8a6]/20">
+                {/* Stats Row */}
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 border-2 border-white text-center">
+                    <div className="text-4xl font-bold text-gray-900">
+                      {Math.round((stats.active / stats.total) * 100)}%
+                    </div>
+                  </div>
                   
-                  {/* Activity Timeline */}
-                  <div className="mb-6">
-                    <h3 className="text-sm font-semibold text-gray-300 mb-3">Activity Timeline</h3>
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 border-2 border-white text-center">
+                    <div className="text-4xl font-bold text-gray-900">
+                      {statusData.find(s => s.name === 'Warning')?.value || 0}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 border-2 border-white text-center">
+                    <div className="text-4xl font-bold text-gray-900">
+                      {statusData.find(s => s.name === 'Offline')?.value || 0}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Timeline Chart */}
+                <div className="bg-white/90 backdrop-blur-sm rounded-lg p-5 border-2 border-white mb-4">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Activity Timeline</h3>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <LineChart data={activityData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+                      <defs>
+                        <linearGradient id="colorCountFull" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.4} />
+                          <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.05} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis
+                        dataKey="time"
+                        stroke="#6b7280"
+                        tick={{ fontSize: 11, fill: '#9ca3af' }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        stroke="#6b7280"
+                        tick={{ fontSize: 11, fill: '#9ca3af' }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#1f2937',
+                          border: '1px solid #14b8a6',
+                          borderRadius: '8px',
+                          fontSize: '12px'
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="count"
+                        stroke="#14b8a6"
+                        strokeWidth={2.5}
+                        dot={false}
+                        activeDot={{ r: 6, fill: "#14b8a6", strokeWidth: 2, stroke: "#0d1425" }}
+                        fill="url(#colorCountFull)"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Distribution Charts */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Version Distribution */}
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg p-5 border-2 border-white">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Version Distribution</h3>
                     <ResponsiveContainer width="100%" height={200}>
-                      <LineChart data={activityData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-                        <defs>
-                          <linearGradient id="colorCountFull" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <XAxis
-                          dataKey="time"
-                          stroke="#6b7280"
-                          tick={{ fontSize: 11, fill: '#9ca3af' }}
-                          axisLine={{ stroke: '#374151' }}
-                          tickLine={false}
-                        />
-                        <YAxis
-                          stroke="#6b7280"
-                          tick={{ fontSize: 11, fill: '#9ca3af' }}
-                          axisLine={{ stroke: '#374151' }}
-                          tickLine={false}
-                        />
+                      <PieChart>
+                        <Pie
+                          data={versionData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={70}
+                          innerRadius={45}
+                          fill="#000000"
+                          dataKey="value"
+                          paddingAngle={2}
+                          label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                        >
+                          {versionData.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
                         <Tooltip
                           contentStyle={{
                             backgroundColor: '#1f2937',
                             border: '1px solid #14b8a6',
-                            borderRadius: '6px',
+                            borderRadius: '8px',
                             fontSize: '12px'
                           }}
                         />
-                        <Line
-                          type="monotone"
-                          dataKey="count"
-                          stroke="#14b8a6"
-                          strokeWidth={2.5}
-                          dot={{ fill: "#14b8a6", r: 4, strokeWidth: 2, stroke: "#fff" }}
-                          activeDot={{ r: 6 }}
-                          fill="url(#colorCountFull)"
-                        />
-                      </LineChart>
+                      </PieChart>
                     </ResponsiveContainer>
                   </div>
 
-                  {/* Divider */}
-                  <div className="border-t border-gray-700/50 my-6"></div>
-
-                  {/* Distribution Charts */}
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-300 mb-4">Distribution</h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      
-                      {/* Version Distribution */}
-                      <div>
-                        <div className="text-xs text-gray-400 mb-2 text-center">Version</div>
-                        <ResponsiveContainer width="100%" height={200}>
-                          <PieChart>
-                            <Pie
-                              data={versionData}
-                              cx="50%"
-                              cy="50%"
-                              labelLine={false}
-                              outerRadius={70}
-                              innerRadius={45}
-                              fill="#000000"
-                              dataKey="value"
-                              paddingAngle={2}
-                              label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                            >
-                              {versionData.map((_, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                              ))}
-                            </Pie>
-                            <Tooltip
-                              contentStyle={{
-                                backgroundColor: '#1f2937',
-                                border: '1px solid #14b8a6',
-                                borderRadius: '6px',
-                                fontSize: '12px'
-                              }}
-                            />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-
-                      {/* Status Distribution */}
-                      <div>
-                        <div className="text-xs text-gray-400 mb-2 text-center">Status</div>
-                        <ResponsiveContainer width="100%" height={200}>
-                          <PieChart>
-                            <Pie
-                              data={statusData}
-                              cx="50%"
-                              cy="50%"
-                              labelLine={false}
-                              outerRadius={70}
-                              innerRadius={45}
-                              fill="#000000"
-                              dataKey="value"
-                              paddingAngle={2}
-                              label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                            >
-                              {statusData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} />
-                              ))}
-                            </Pie>
-                            <Tooltip
-                              contentStyle={{
-                                backgroundColor: '#1f2937',
-                                border: '1px solid #14b8a6',
-                                borderRadius: '6px',
-                                fontSize: '12px'
-                              }}
-                            />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
+                  {/* Status Distribution */}
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg p-5 border-2 border-white">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Status Distribution</h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <PieChart>
+                        <Pie
+                          data={statusData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={70}
+                          innerRadius={45}
+                          fill="#000000"
+                          dataKey="value"
+                          paddingAngle={2}
+                          label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                        >
+                          {statusData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#1f2937',
+                            border: '1px solid #14b8a6',
+                            borderRadius: '8px',
+                            fontSize: '12px'
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
-
                 </div>
               </motion.div>
             )}
 
-            {/* DOCS VIEW */}
-            {currentView === "docs" && (
+            {/* DOCS VIEW REMOVED - NOW A MODAL */}
+            {false && currentView === "docs" && (
               <motion.div
                 key="docs"
                 initial={{ opacity: 0, y: 20 }}
@@ -982,9 +984,9 @@ export default function Home() {
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
               className="fixed right-0 top-0 h-full w-full md:w-[600px] bg-[#0d1425]/98 backdrop-blur-md z-50 overflow-y-auto shadow-2xl border-l border-[#14b8a6]/30"
             >
-              <div className="p-8">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-3xl font-black text-white">Node Details</h2>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#14b8a6]/30">
+                  <h2 className="text-2xl font-black text-white">Node Details</h2>
                   <button
                     onClick={() => setSelectedNode(null)}
                     className="text-[#14b8a6] hover:text-[#0d9488] transition-colors text-2xl font-bold"
@@ -993,78 +995,80 @@ export default function Home() {
                   </button>
                 </div>
 
-                <div className="space-y-6">
-                  {/* Health Status */}
-                  <div>
-                    <div className="text-xs text-[#14b8a6] font-bold mb-2 uppercase tracking-wider">Health Status</div>
-                    <div className="flex items-center gap-3 bg-[#050b1f] p-4 rounded-xl border border-[#14b8a6]/30">
-                      <div className={`w-3 h-3 rounded-full ${getNodeHealth(selectedNode.last_seen_timestamp).color}`}></div>
-                      <span className={`text-lg font-bold ${getNodeHealth(selectedNode.last_seen_timestamp).textColor}`}>
-                        {getNodeHealth(selectedNode.last_seen_timestamp).label}
-                      </span>
+                <div className="space-y-3">
+                  {/* Status Overview Card */}
+                  <div className="bg-gradient-to-br from-[#14b8a6]/10 to-transparent rounded-lg p-3 border border-[#14b8a6]/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${getNodeHealth(selectedNode.last_seen_timestamp).color} animate-pulse`}></div>
+                        <span className={`text-base font-bold ${getNodeHealth(selectedNode.last_seen_timestamp).textColor}`}>
+                          {getNodeHealth(selectedNode.last_seen_timestamp).label}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {getTimeSince(selectedNode.last_seen_timestamp)} ago
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Uptime */}
-                  <div>
-                    <div className="text-xs text-[#14b8a6] font-bold mb-2 uppercase tracking-wider">Uptime Progress</div>
-                    <div className="bg-[#050b1f] p-4 rounded-xl border border-[#14b8a6]/30">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="flex-1 bg-[#0d1425] rounded-full h-4 overflow-hidden">
-                          <div
-                            className="h-full transition-all bg-gradient-to-r from-[#14b8a6] to-[#0d9488]"
-                            style={{ width: `${getUptimePercentage(selectedNode.last_seen_timestamp)}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-lg font-bold text-white min-w-[60px]">
+                    
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] text-gray-400">Uptime</span>
+                        <span className="text-xs font-bold text-white">
                           {getUptimePercentage(selectedNode.last_seen_timestamp).toFixed(1)}%
                         </span>
                       </div>
-                      <div className="text-xs text-gray-400">Based on 5-minute window</div>
+                      <div className="bg-[#0d1425] rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="h-full transition-all bg-gradient-to-r from-[#14b8a6] to-[#0d9488]"
+                          style={{ width: `${getUptimePercentage(selectedNode.last_seen_timestamp)}%` }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Public Key */}
-                  <div>
-                    <div className="text-xs text-[#14b8a6] font-bold mb-2 uppercase tracking-wider">Public Key</div>
-                    <div className="font-mono text-sm text-white break-all bg-[#050b1f] p-4 rounded-xl border border-[#14b8a6]/30">
-                      {selectedNode.pubkey || "N/A"}
+                  {/* Node Information Grid */}
+                  <div className="grid grid-cols-1 gap-2">
+                    {/* Public Key */}
+                    <div className="bg-[#050b1f] p-2 rounded-lg border border-[#14b8a6]/30">
+                      <div className="text-[10px] text-[#14b8a6] font-bold mb-1">Public Key</div>
+                      <div className="font-mono text-[10px] text-white break-all">
+                        {selectedNode.pubkey || "N/A"}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Address */}
-                  <div>
-                    <div className="text-xs text-[#14b8a6] font-bold mb-2 uppercase tracking-wider">Address</div>
-                    <div className="font-mono text-sm text-white bg-[#050b1f] p-4 rounded-xl border border-[#14b8a6]/30">
-                      {selectedNode.address}
-                    </div>
-                  </div>
-
-                  {/* Version */}
-                  <div>
-                    <div className="text-xs text-[#14b8a6] font-bold mb-2 uppercase tracking-wider">Version</div>
-                    <div className="text-sm text-white bg-[#050b1f] p-4 rounded-xl border border-[#14b8a6]/30">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-gradient-to-r from-[#14b8a6] to-[#0d9488] text-white">
-                        {selectedNode.version}
-                      </span>
+                    {/* Address & Version */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-[#050b1f] p-2 rounded-lg border border-[#14b8a6]/30">
+                        <div className="text-[10px] text-[#14b8a6] font-bold mb-1">Address</div>
+                        <div className="font-mono text-[10px] text-white">
+                          {selectedNode.address}
+                        </div>
+                      </div>
+                      
+                      <div className="bg-[#050b1f] p-2 rounded-lg border border-[#14b8a6]/30">
+                        <div className="text-[10px] text-[#14b8a6] font-bold mb-1">Version</div>
+                        <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gradient-to-r from-[#14b8a6] to-[#0d9488] text-white">
+                          {selectedNode.version}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
                   {/* Location */}
                   <div>
-                    <div className="text-xs text-[#14b8a6] font-bold mb-2 uppercase tracking-wider">Location</div>
-                    <div className="bg-[#050b1f] p-4 rounded-xl border border-[#14b8a6]/30 space-y-2">
+                    <div className="text-[10px] text-[#14b8a6] font-bold mb-1 uppercase tracking-wider">Location</div>
+                    <div className="bg-[#050b1f] p-2 rounded-lg border border-[#14b8a6]/30 space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-gray-400 font-semibold">City:</span>
-                        <span className="text-white font-medium">{selectedNode.city || "Unknown"}</span>
+                        <span className="text-gray-400 font-semibold text-[10px]">City:</span>
+                        <span className="text-white font-medium text-xs">{selectedNode.city || "Unknown"}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-gray-400 font-semibold">Country:</span>
-                        <span className="text-white font-medium">{selectedNode.country || "Unknown"}</span>
+                        <span className="text-gray-400 font-semibold text-[10px]">Country:</span>
+                        <span className="text-white font-medium text-xs">{selectedNode.country || "Unknown"}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-gray-400 font-semibold">Coordinates:</span>
-                        <span className="text-white font-mono text-sm">
+                        <span className="text-gray-400 font-semibold text-[10px]">Coordinates:</span>
+                        <span className="text-white font-mono text-[10px]">
                           {selectedNode.latitude?.toFixed(4)}, {selectedNode.longitude?.toFixed(4)}
                         </span>
                       </div>
@@ -1073,20 +1077,20 @@ export default function Home() {
 
                   {/* Provider */}
                   <div>
-                    <div className="text-xs text-[#14b8a6] font-bold mb-2 uppercase tracking-wider">Provider</div>
-                    <div className="text-sm text-white bg-[#050b1f] p-4 rounded-xl border border-[#14b8a6]/30">
+                    <div className="text-[10px] text-[#14b8a6] font-bold mb-1 uppercase tracking-wider">Provider</div>
+                    <div className="text-xs text-white bg-[#050b1f] p-2 rounded-lg border border-[#14b8a6]/30">
                       {selectedNode.provider || "Unknown"}
                     </div>
                   </div>
 
                   {/* Last Seen */}
                   <div>
-                    <div className="text-xs text-[#14b8a6] font-bold mb-2 uppercase tracking-wider">Last Seen</div>
-                    <div className="bg-[#050b1f] p-4 rounded-xl border border-[#14b8a6]/30">
-                      <div className="text-lg font-bold text-white mb-1">
+                    <div className="text-[10px] text-[#14b8a6] font-bold mb-1 uppercase tracking-wider">Last Seen</div>
+                    <div className="bg-[#050b1f] p-2 rounded-lg border border-[#14b8a6]/30">
+                      <div className="text-sm font-bold text-white mb-0.5">
                         {getTimeSince(selectedNode.last_seen_timestamp)} ago
                       </div>
-                      <div className="text-xs text-gray-400">
+                      <div className="text-[10px] text-gray-400">
                         {new Date(selectedNode.last_seen_timestamp * 1000).toLocaleString()}
                       </div>
                     </div>
@@ -1101,6 +1105,421 @@ export default function Home() {
                       {JSON.stringify(selectedNode, null, 2)}
                     </pre>
                   </details>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ANALYTICS MODAL */}
+      <AnimatePresence>
+        {showAnalyticsModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAnalyticsModal(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed inset-4 md:inset-10 lg:inset-20 bg-[#0d1425]/98 backdrop-blur-md z-50 overflow-y-auto shadow-2xl border border-[#14b8a6]/30 rounded-2xl"
+            >
+              <div className="p-6 md:p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl md:text-3xl font-black text-white">Analytics</h2>
+                  <button
+                    onClick={() => setShowAnalyticsModal(false)}
+                    className="text-[#14b8a6] hover:text-[#0d9488] transition-colors text-2xl font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="max-w-6xl mx-auto">
+                  {/* Stats Row */}
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 border-2 border-white mb-5">
+                    <div className="grid grid-cols-3 gap-6">
+                      <div className="text-center">
+                        <div className="text-[10px] text-gray-500 mb-1 uppercase tracking-wide">Network Health</div>
+                        <div className="text-2xl font-bold text-gray-900">
+                          {Math.round((stats.active / stats.total) * 100)}%
+                        </div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="text-[10px] text-gray-500 mb-1 uppercase tracking-wide">Warnings</div>
+                        <div className="text-2xl font-bold text-gray-900">
+                          {statusData.find(s => s.name === 'Warning')?.value || 0}
+                        </div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="text-[10px] text-gray-500 mb-1 uppercase tracking-wide">Offline</div>
+                        <div className="text-2xl font-bold text-gray-900">
+                          {statusData.find(s => s.name === 'Offline')?.value || 0}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Timeline and Charts Combined Box */}
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 border-2 border-white pb-6">
+                    {/* Timeline Chart */}
+                    <div className="mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-xs font-semibold text-gray-900">Activity Timeline</h3>
+                      <div className="text-[10px] text-gray-500">Last 24 Hours</div>
+                    </div>
+                    <ResponsiveContainer width="100%" height={175}>
+                      <AreaChart data={activityData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                        <defs>
+                          <linearGradient id="colorCountModal" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.05} />
+                          </linearGradient>
+                        </defs>
+                        <XAxis
+                          dataKey="time"
+                          stroke="#9ca3af"
+                          tick={{ fontSize: 10, fill: '#6b7280' }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          stroke="#9ca3af"
+                          tick={{ fontSize: 10, fill: '#6b7280' }}
+                          axisLine={false}
+                          tickLine={false}
+                          width={30}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#ffffff',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            padding: '6px 10px'
+                          }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="count"
+                          stroke="#14b8a6"
+                          strokeWidth={2}
+                          fill="url(#colorCountModal)"
+                          dot={{ fill: "#14b8a6", r: 3 }}
+                          activeDot={{ r: 5, fill: "#14b8a6", stroke: "#fff", strokeWidth: 2 }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                    </div>
+
+                    {/* Distribution Charts */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {/* Version Distribution */}
+                    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 border-2 border-white">
+                      <h3 className="text-xs font-semibold text-gray-900 mb-3">Version Distribution</h3>
+                      <div className="flex items-center gap-4">
+                        <div className="flex-shrink-0">
+                          <ResponsiveContainer width={138} height={138}>
+                            <PieChart>
+                              <Pie
+                                data={versionData}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                outerRadius={55}
+                                innerRadius={35}
+                                fill="#000000"
+                                dataKey="value"
+                                paddingAngle={3}
+                              >
+                                {versionData.map((_, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                contentStyle={{
+                                  backgroundColor: '#1f2937',
+                                  border: '1px solid #14b8a6',
+                                  borderRadius: '6px',
+                                  fontSize: '11px'
+                                }}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <div className="flex-1 space-y-1.5">
+                          {versionData.slice(0, 4).map((item, index) => (
+                            <div key={index} className="flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2">
+                                <div 
+                                  className="w-2.5 h-2.5 rounded-sm" 
+                                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                                ></div>
+                                <span className="text-gray-700">{item.name}</span>
+                              </div>
+                              <span className="font-semibold text-gray-900">{item.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Status Distribution */}
+                    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 border-2 border-white">
+                      <h3 className="text-xs font-semibold text-gray-900 mb-3">Status Distribution</h3>
+                      <div className="flex items-center gap-4">
+                        <div className="flex-shrink-0">
+                          <ResponsiveContainer width={120} height={120}>
+                            <PieChart>
+                              <Pie
+                                data={statusData}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                outerRadius={50}
+                                innerRadius={30}
+                                fill="#000000"
+                                dataKey="value"
+                                paddingAngle={3}
+                              >
+                                {statusData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                contentStyle={{
+                                  backgroundColor: '#1f2937',
+                                  border: '1px solid #14b8a6',
+                                  borderRadius: '6px',
+                                  fontSize: '11px'
+                                }}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <div className="flex-1 space-y-1.5">
+                          {statusData.map((item, index) => (
+                            <div key={index} className="flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2">
+                                <div 
+                                  className="w-2.5 h-2.5 rounded-full" 
+                                  style={{ backgroundColor: item.color }}
+                                ></div>
+                                <span className="text-gray-700">{item.name}</span>
+                              </div>
+                              <span className="font-semibold text-gray-900">{item.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* DOCS MODAL */}
+      <AnimatePresence>
+        {showDocsModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDocsModal(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed inset-4 md:inset-10 lg:inset-20 bg-[#0d1425]/98 backdrop-blur-md z-50 overflow-y-auto shadow-2xl border border-[#14b8a6]/30 rounded-2xl"
+            >
+              <div className="p-6 md:p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl md:text-3xl font-black text-white">Documentation</h2>
+                  <button
+                    onClick={() => setShowDocsModal(false)}
+                    className="text-[#14b8a6] hover:text-[#0d9488] transition-colors text-2xl font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="flex gap-6 max-w-7xl mx-auto">
+                  {/* Sidebar Navigation */}
+                  <div className="hidden lg:block w-64 flex-shrink-0">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-xl p-6 border-2 border-white sticky top-0" style={{ height: 'calc(100vh - 180px)' }}>
+                      <h3 className="text-base font-bold text-gray-900 mb-6 uppercase tracking-wide">Contents</h3>
+                      <nav className="space-y-3">
+                        <a href="#overview" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">Overview</a>
+                        <a href="#features" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">Key Features</a>
+                        <a href="#how-to-use" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">How to Use</a>
+                        <a href="#status" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">Status Indicators</a>
+                        <a href="#about" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">About Xandeum</a>
+                        <a href="#faq" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">FAQ</a>
+                        <a href="#resources" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">Resources</a>
+                        <a href="#technical" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">Technical Details</a>
+                      </nav>
+                    </div>
+                  </div>
+
+                  {/* Main Content */}
+                  <div className="bg-white/90 backdrop-blur-sm rounded-xl p-8 border-2 border-white flex-1 overflow-y-auto" style={{ height: 'calc(100vh - 180px)' }}>
+                  <div className="space-y-8">
+                    {/* Overview */}
+                    <section id="overview">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">Overview</h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        Xandeum pNode Analytics is a real-time monitoring dashboard for Xandeum DevNet nodes.
+                        Track node health, performance metrics, and geographic distribution across the network.
+                      </p>
+                    </section>
+
+                    {/* Features */}
+                    <section id="features">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">Key Features</h3>
+                      <ul className="space-y-2 text-gray-700">
+                        <li className="flex items-start gap-2">
+                          <span className="text-gray-900">•</span>
+                          <span><strong className="text-gray-900">Real-time Monitoring:</strong> Auto-refreshes every 30 seconds with live data from DevNet</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-gray-900">•</span>
+                          <span><strong className="text-gray-900">Node Health Status:</strong> Active, Warning, and Offline indicators</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-gray-900">•</span>
+                          <span><strong className="text-gray-900">Advanced Filtering:</strong> Filter by status, version, and search by pubkey</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-gray-900">•</span>
+                          <span><strong className="text-gray-900">Analytics Dashboard:</strong> View activity timelines and distribution charts</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-gray-900">•</span>
+                          <span><strong className="text-gray-900">Geographic Insights:</strong> See node locations and provider information</span>
+                        </li>
+                      </ul>
+                    </section>
+
+                    {/* How to Use */}
+                    <section id="how-to-use">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">How to Use</h3>
+                      <div className="space-y-3 text-gray-700">
+                        <p><strong className="text-gray-900">1. Overview Tab:</strong> View all nodes in a sortable table with real-time status</p>
+                        <p><strong className="text-gray-900">2. Click Any Node:</strong> Opens detailed information panel on the right</p>
+                        <p><strong className="text-gray-900">3. Filter Nodes:</strong> Use status and version filters to narrow down results</p>
+                        <p><strong className="text-gray-900">4. Search:</strong> Find specific nodes by pubkey or address</p>
+                        <p><strong className="text-gray-900">5. Analytics:</strong> Click Analytics button to view charts and statistics</p>
+                      </div>
+                    </section>
+
+                    {/* Status Indicators */}
+                    <section id="status">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">Status Indicators</h3>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3 bg-gray-100 p-3 rounded-lg border border-gray-300">
+                          <div className="w-3 h-3 rounded-full bg-[#14b8a6]"></div>
+                          <span className="text-gray-900 font-semibold">Active:</span>
+                          <span className="text-gray-700">Last seen within 30 seconds</span>
+                        </div>
+                        <div className="flex items-center gap-3 bg-gray-100 p-3 rounded-lg border border-gray-300">
+                          <div className="w-3 h-3 rounded-full bg-gray-500"></div>
+                          <span className="text-gray-900 font-semibold">Warning:</span>
+                          <span className="text-gray-700">Last seen 30-120 seconds ago</span>
+                        </div>
+                        <div className="flex items-center gap-3 bg-gray-100 p-3 rounded-lg border border-gray-300">
+                          <div className="w-3 h-3 rounded-full bg-gray-700"></div>
+                          <span className="text-gray-900 font-semibold">Offline:</span>
+                          <span className="text-gray-700">Last seen over 120 seconds ago</span>
+                        </div>
+                      </div>
+                    </section>
+
+                    {/* About Xandeum */}
+                    <section id="about">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">About Xandeum</h3>
+                      <p className="text-gray-700 leading-relaxed mb-3">
+                        Xandeum is revolutionizing blockchain storage by solving the storage trilemma. Our solution provides scalable storage to exabytes, smart contract native integration, and random access capabilities for Solana.
+                      </p>
+                      <p className="text-gray-700 leading-relaxed">
+                        Through our pNode network and liquid staking solutions, we enable decentralized storage that compounds your earnings while supporting the network.
+                      </p>
+                    </section>
+
+                    {/* Frequently Asked Questions */}
+                    <section id="faq">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">Frequently Asked Questions</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">What is a pNode?</h4>
+                          <p className="text-gray-700 text-sm">pNodes are decentralized storage nodes that form the backbone of Xandeum's storage network. They use erasure coding technology to provide reliable, scalable storage for Solana.</p>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">How often does the data refresh?</h4>
+                          <p className="text-gray-700 text-sm">The dashboard automatically refreshes every 30 seconds to provide real-time monitoring of all DevNet nodes.</p>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">What does the uptime percentage mean?</h4>
+                          <p className="text-gray-700 text-sm">Uptime percentage indicates how recently a node was active. It's calculated based on the last seen timestamp, with 100% meaning the node was seen within the last 30 seconds.</p>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">Can I run my own pNode?</h4>
+                          <p className="text-gray-700 text-sm">Yes! Visit the Xandeum website to learn how to set up and run your own pNode to contribute to the decentralized storage network.</p>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">What is STOINC?</h4>
+                          <p className="text-gray-700 text-sm">STOINC (Storage Income) is Xandeum's revolutionary passive income solution that allows you to earn through scalable storage solutions on the Solana network.</p>
+                        </div>
+                      </div>
+                    </section>
+
+                    {/* Resources */}
+                    <section id="resources">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">Resources</h3>
+                      <div className="space-y-2">
+                        <a href="https://www.xandeum.network/" target="_blank" rel="noopener noreferrer" className="block text-blue-600 hover:text-blue-800 underline">
+                          Official Website
+                        </a>
+                        <a href="https://www.xandeum.network/stoinc" target="_blank" rel="noopener noreferrer" className="block text-blue-600 hover:text-blue-800 underline">
+                          STOINC - Passive Income Solution
+                        </a>
+                        <a href="https://xandsol.xandeum.network/" target="_blank" rel="noopener noreferrer" className="block text-blue-600 hover:text-blue-800 underline">
+                          Liquid Staking Platform
+                        </a>
+                        <a href="https://www.xandeum.network/blog" target="_blank" rel="noopener noreferrer" className="block text-blue-600 hover:text-blue-800 underline">
+                          Latest News & Updates
+                        </a>
+                      </div>
+                    </section>
+
+                    {/* Technical Details */}
+                    <section id="technical">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">Technical Details</h3>
+                      <div className="space-y-2 text-gray-700">
+                        <p><strong className="text-gray-900">Network:</strong> Solana DevNet</p>
+                        <p><strong className="text-gray-900">Refresh Rate:</strong> 30 seconds</p>
+                        <p><strong className="text-gray-900">Storage Technology:</strong> Erasure Coding</p>
+                        <p><strong className="text-gray-900">Scalability:</strong> Exabytes+</p>
+                        <p><strong className="text-gray-900">Integration:</strong> Smart Contract Native</p>
+                      </div>
+                    </section>
+                  </div>
+                  </div>
                 </div>
               </div>
             </motion.div>
