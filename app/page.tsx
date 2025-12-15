@@ -283,7 +283,6 @@ export default function Home() {
                   <h1 className="text-sm md:text-lg font-black text-white">
                     Xandeum pNode Analytics
                   </h1>
-                  <p className="text-[#14b8a6] text-[10px] font-medium">Real-time DevNet monitoring</p>
                 </div>
               </div>
 
