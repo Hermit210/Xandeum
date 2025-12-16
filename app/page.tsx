@@ -1188,6 +1188,7 @@ export default function Home() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
               className="fixed inset-4 md:inset-10 lg:inset-20 bg-[#0d1425]/98 backdrop-blur-md z-50 overflow-y-auto shadow-2xl border border-[#14b8a6]/30 rounded-2xl"
             >
               <div className="p-6 md:p-8">
@@ -1406,6 +1407,7 @@ export default function Home() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
               className="fixed inset-4 md:inset-10 lg:inset-20 bg-[#0d1425]/98 backdrop-blur-md z-50 overflow-y-auto shadow-2xl border border-[#14b8a6]/30 rounded-2xl"
             >
               <div className="p-6 md:p-8">

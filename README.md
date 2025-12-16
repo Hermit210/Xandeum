@@ -92,10 +92,5 @@ Example response:
 ]
 ```
 
-## Development
 
-No local pNode setup required! The dashboard connects directly to Xandeum's public DevNet node.
 
-## Deployment
-
-Ready to deploy to Vercel, Netlify, or any Next.js hosting platform.
