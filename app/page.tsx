@@ -263,70 +263,69 @@ export default function Home() {
         }}
       />
       
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* TOP NAVIGATION BAR */}
-        <div className="sticky top-0 z-50 -mx-6 backdrop-blur-sm">
-          <div className="px-4 md:px-6 py-3 md:py-4">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 w-full">
-              {/* Left Side - Logo */}
-              <div className="flex items-center gap-2 md:gap-3">
+      <div className="relative z-10">
+        {/* TOP NAVIGATION BAR - Floating */}
+        <div className="sticky top-4 z-50 max-w-7xl mx-auto px-6">
+          <div className="bg-[#0d1b3a]/95 backdrop-blur-md rounded-full border border-[#14b8a6]/20 shadow-xl px-8 py-4">
+            <div className="flex items-center justify-between">
+              {/* Left Side - Logo and Brand */}
+              <div className="flex items-center gap-3">
                 <img
-                  src="/Xandeum.avif"
+                  src="/xandeum.png"
                   alt="Xandeum Logo"
-                  className="w-6 h-6 md:w-8 md:h-8 object-contain"
+                  className="h-8 object-contain"
                   onError={(e) => {
                     console.error('Logo failed to load, trying fallback');
                     e.currentTarget.src = '/logo.png';
                   }}
                 />
-                <div>
-                  <h1 className="text-sm md:text-lg font-black text-white">
-                    Xandeum pNode Analytics
-                  </h1>
-                </div>
+                <span className="text-gray-400 text-base font-bold">pNode Analytics</span>
               </div>
 
-              {/* Right Side - Navigation Tabs and Actions */}
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex items-center gap-3 md:gap-6 overflow-x-auto">
-                  <button
-                    onClick={() => setCurrentView("overview")}
-                    className={`px-2 py-2 text-xs md:text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
-                      currentView === "overview"
-                        ? "text-[#14b8a6] border-[#14b8a6]"
-                        : "text-gray-400 border-transparent hover:text-white"
-                    }`}
-                  >
-                    Overview
-                  </button>
-                  <button
-                    onClick={() => setShowAnalyticsModal(true)}
-                    className="px-2 py-2 text-xs md:text-sm font-bold transition-all border-b-2 whitespace-nowrap text-gray-400 border-transparent hover:text-white"
-                  >
-                    Analytics
-                  </button>
-                  <button
-                    onClick={() => setShowDocsModal(true)}
-                    className="px-2 py-2 text-xs md:text-sm font-bold transition-all border-b-2 whitespace-nowrap text-gray-400 border-transparent hover:text-white"
-                  >
-                    Docs
-                  </button>
-                </div>
+              {/* Center - Navigation Links */}
+              <nav className="hidden md:flex items-center gap-10">
+                <button
+                  onClick={() => setCurrentView("overview")}
+                  className={`text-base font-bold transition-colors ${
+                    currentView === "overview"
+                      ? "text-white"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => setShowAnalyticsModal(true)}
+                  className="text-base font-bold text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                >
+                  <span className="text-yellow-400 text-lg">💡</span>
+                  Analytics
+                </button>
+                <button
+                  onClick={() => setShowDocsModal(true)}
+                  className="text-base font-bold text-gray-400 hover:text-white transition-colors"
+                >
+                  Docs
+                </button>
+              </nav>
+
+              {/* Right Side - Actions */}
+              <div className="flex items-center gap-4">
                 {refreshing && (
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="flex items-center gap-1.5 text-white text-xs font-medium"
+                    className="hidden md:flex items-center gap-2 text-gray-400 text-sm font-bold"
                   >
-                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-[#14b8a6] rounded-full animate-pulse"></div>
                     Refreshing...
                   </motion.div>
                 )}
                 <button
                   onClick={() => fetchNodes(true)}
-                  className="flex items-center gap-1.5 text-[#14b8a6] hover:text-[#0d9488] font-bold transition-all text-sm"
+                  className="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#14b8a6]/10 hover:bg-[#14b8a6]/20 text-[#14b8a6] text-base font-bold transition-all"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                   Refresh
@@ -337,7 +336,7 @@ export default function Home() {
         </div>
 
         {/* MAIN CONTENT AREA */}
-        <div className="p-4 md:p-6">
+        <div className="max-w-7xl mx-auto px-6 pt-16 pb-6">
           <AnimatePresence mode="wait">
             {/* OVERVIEW VIEW */}
             {currentView === "overview" && (
@@ -368,40 +367,40 @@ export default function Home() {
           <div className="flex items-center gap-1.5 md:gap-2">
             <button
               onClick={() => setFilterStatus("all")}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              className={`px-4 py-2 rounded-full text-sm font-black transition-all ${
                 filterStatus === "all"
                   ? "bg-[#14b8a6] text-white"
-                  : "text-gray-400 hover:text-white hover:bg-[#14b8a6]/10"
+                  : "text-gray-300 hover:text-white hover:bg-[#14b8a6]/10"
               }`}
             >
               All
             </button>
             <button
               onClick={() => setFilterStatus("active")}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              className={`px-4 py-2 rounded-full text-sm font-black transition-all ${
                 filterStatus === "active"
                   ? "bg-[#14b8a6] text-white"
-                  : "text-gray-400 hover:text-white hover:bg-[#14b8a6]/10"
+                  : "text-gray-300 hover:text-white hover:bg-[#14b8a6]/10"
               }`}
             >
               Active
             </button>
             <button
               onClick={() => setFilterStatus("warning")}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              className={`px-4 py-2 rounded-full text-sm font-black transition-all ${
                 filterStatus === "warning"
                   ? "bg-[#14b8a6] text-white"
-                  : "text-gray-400 hover:text-white hover:bg-[#14b8a6]/10"
+                  : "text-gray-300 hover:text-white hover:bg-[#14b8a6]/10"
               }`}
             >
               Warning
             </button>
             <button
               onClick={() => setFilterStatus("offline")}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              className={`px-4 py-2 rounded-full text-sm font-black transition-all ${
                 filterStatus === "offline"
                   ? "bg-[#14b8a6] text-white"
-                  : "text-gray-400 hover:text-white hover:bg-[#14b8a6]/10"
+                  : "text-gray-300 hover:text-white hover:bg-[#14b8a6]/10"
               }`}
             >
               Offline
@@ -414,11 +413,11 @@ export default function Home() {
           <select
             value={filterVersion}
             onChange={(e) => setFilterVersion(e.target.value)}
-            className="px-3 py-1.5 rounded-full text-xs font-medium bg-transparent text-gray-400 hover:text-white border border-[#14b8a6]/20 outline-none cursor-pointer transition-all"
+            className="px-4 py-2 rounded-full text-sm font-black bg-transparent text-gray-300 hover:text-white border border-[#14b8a6]/20 outline-none cursor-pointer transition-all"
           >
-            <option value="all" className="bg-[#0d1425] text-white">All Versions</option>
+            <option value="all" className="bg-[#0d1425] text-white font-black">All Versions</option>
             {availableVersions.map((version) => (
-              <option key={version} value={version} className="bg-[#0d1425] text-white">
+              <option key={version} value={version} className="bg-[#0d1425] text-white font-black">
                 {version}
               </option>
             ))}
