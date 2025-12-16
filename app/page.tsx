@@ -34,6 +34,7 @@ export default function Home() {
   const [currentView, setCurrentView] = useState<ViewMode>("overview");
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
   const [showDocsModal, setShowDocsModal] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const fetchNodes = async (showRefresh = false) => {
     try {
@@ -282,7 +283,7 @@ export default function Home() {
                 <span className="text-gray-400 text-base font-bold">pNode Analytics</span>
               </div>
 
-              {/* Center - Navigation Links */}
+              {/* Center - Navigation Links (Desktop) */}
               <nav className="hidden md:flex items-center gap-10">
                 <button
                   onClick={() => setCurrentView("overview")}
@@ -330,9 +331,82 @@ export default function Home() {
                   </svg>
                   Refresh
                 </button>
+                
+                {/* Mobile Menu Button */}
+                <button
+                  onClick={() => setShowMobileMenu(!showMobileMenu)}
+                  className="md:hidden p-2 rounded-lg hover:bg-white/5 transition-colors"
+                >
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {showMobileMenu ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    )}
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
+          
+          {/* Mobile Menu Dropdown */}
+          <AnimatePresence>
+            {showMobileMenu && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="md:hidden mt-2 bg-[#0d1b3a]/95 backdrop-blur-md rounded-2xl border border-[#14b8a6]/20 shadow-xl overflow-hidden"
+              >
+                <nav className="flex flex-col p-4 gap-2">
+                  <button
+                    onClick={() => {
+                      setCurrentView("overview");
+                      setShowMobileMenu(false);
+                    }}
+                    className={`text-left px-4 py-3 rounded-lg text-base font-bold transition-colors ${
+                      currentView === "overview"
+                        ? "bg-[#14b8a6] text-white"
+                        : "text-gray-300 hover:bg-white/5"
+                    }`}
+                  >
+                    Dashboard
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowAnalyticsModal(true);
+                      setShowMobileMenu(false);
+                    }}
+                    className="text-left px-4 py-3 rounded-lg text-base font-bold text-gray-300 hover:bg-white/5 transition-colors flex items-center gap-2"
+                  >
+                    <span className="text-yellow-400 text-lg">💡</span>
+                    Analytics
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDocsModal(true);
+                      setShowMobileMenu(false);
+                    }}
+                    className="text-left px-4 py-3 rounded-lg text-base font-bold text-gray-300 hover:bg-white/5 transition-colors"
+                  >
+                    Docs
+                  </button>
+                  <button
+                    onClick={() => {
+                      fetchNodes(true);
+                      setShowMobileMenu(false);
+                    }}
+                    className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[#14b8a6]/10 hover:bg-[#14b8a6]/20 text-[#14b8a6] text-base font-bold transition-all"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh
+                  </button>
+                </nav>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* MAIN CONTENT AREA */}
@@ -1427,13 +1501,13 @@ export default function Home() {
                       <h3 className="text-base font-bold text-gray-900 mb-6 uppercase tracking-wide">Contents</h3>
                       <nav className="space-y-3">
                         <a href="#overview" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">Overview</a>
-                        <a href="#features" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">Key Features</a>
+                        <a href="#features" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">Data Source</a>
                         <a href="#how-to-use" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">How to Use</a>
-                        <a href="#status" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">Status Indicators</a>
-                        <a href="#about" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">About Xandeum</a>
+                        <a href="#status" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">Metrics Explanation</a>
+                        <a href="#about" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">About pNodes</a>
                         <a href="#faq" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">FAQ</a>
                         <a href="#resources" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">Resources</a>
-                        <a href="#technical" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">Technical Details</a>
+                        <a href="#technical" className="block text-sm font-bold text-gray-900 hover:text-[#14b8a6] hover:bg-gray-100 transition-colors py-3 px-4 rounded">Dashboard Purpose</a>
                       </nav>
                     </div>
                   </div>
@@ -1444,35 +1518,57 @@ export default function Home() {
                     {/* Overview */}
                     <section id="overview">
                       <h3 className="text-xl font-bold text-gray-900 mb-3">Overview</h3>
-                      <p className="text-gray-700 leading-relaxed">
-                        Xandeum pNode Analytics is a real-time monitoring dashboard for Xandeum DevNet nodes.
-                        Track node health, performance metrics, and geographic distribution across the network.
+                      <p className="text-gray-700 leading-relaxed mb-3">
+                        This is a pNode analytics dashboard for Xandeum DevNet. It retrieves live pNode data using public pNode RPC (pRPC) endpoints and displays real-time information about nodes participating in the DevNet network.
                       </p>
+                      <p className="text-gray-700 leading-relaxed">
+                        The dashboard provides visibility into node status, geographic distribution, software versions, and network activity patterns.
+                      </p>
+                      <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                        <p className="text-sm text-yellow-800 font-semibold">DevNet Disclaimer</p>
+                        <p className="text-sm text-yellow-700 mt-1">This dashboard reflects DevNet data only. Node counts, versions, and availability are subject to change as this is a development network.</p>
+                      </div>
                     </section>
 
-                    {/* Features */}
+                    {/* Data Source */}
                     <section id="features">
-                      <h3 className="text-xl font-bold text-gray-900 mb-3">Key Features</h3>
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">Data Source</h3>
+                      <div className="space-y-3 text-gray-700">
+                        <p className="leading-relaxed">
+                          <strong className="text-gray-900">pRPC Method:</strong> Data is fetched using the <code className="bg-gray-200 px-2 py-1 rounded text-sm">get-pods-with-stats</code> pRPC method from publicly available DevNet pNode RPC endpoints.
+                        </p>
+                        <p className="leading-relaxed">
+                          <strong className="text-gray-900">Public Endpoints:</strong> This dashboard uses public pNode RPC endpoints which have no guarantee of uptime or version consistency. Node count and availability may change over time.
+                        </p>
+                        <p className="leading-relaxed">
+                          <strong className="text-gray-900">Auto-Refresh:</strong> The dashboard automatically refreshes every 30 seconds to display the latest available data from the network.
+                        </p>
+                      </div>
+                    </section>
+
+                    {/* Key Features */}
+                    <section>
+                      <h3 className="text-xl font-bold text-gray-900 mb-3 mt-6">Key Features</h3>
                       <ul className="space-y-2 text-gray-700">
                         <li className="flex items-start gap-2">
                           <span className="text-gray-900">•</span>
-                          <span><strong className="text-gray-900">Real-time Monitoring:</strong> Auto-refreshes every 30 seconds with live data from DevNet</span>
+                          <span><strong className="text-gray-900">Real-time Data:</strong> Live pNode information from DevNet</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-gray-900">•</span>
-                          <span><strong className="text-gray-900">Node Health Status:</strong> Active, Warning, and Offline indicators</span>
+                          <span><strong className="text-gray-900">Node Activity Status:</strong> Active, Warning, and Offline indicators based on last seen timestamp</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-gray-900">•</span>
-                          <span><strong className="text-gray-900">Advanced Filtering:</strong> Filter by status, version, and search by pubkey</span>
+                          <span><strong className="text-gray-900">Filtering & Search:</strong> Filter by status, version, and search by pubkey or address</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-gray-900">•</span>
-                          <span><strong className="text-gray-900">Analytics Dashboard:</strong> View activity timelines and distribution charts</span>
+                          <span><strong className="text-gray-900">Analytics Charts:</strong> View version distribution and activity timelines</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="text-gray-900">•</span>
-                          <span><strong className="text-gray-900">Geographic Insights:</strong> See node locations and provider information</span>
+                          <span><strong className="text-gray-900">Geographic Data:</strong> Node locations and provider information via IP geolocation</span>
                         </li>
                       </ul>
                     </section>
@@ -1489,37 +1585,51 @@ export default function Home() {
                       </div>
                     </section>
 
-                    {/* Status Indicators */}
+                    {/* Metrics Explanation */}
                     <section id="status">
-                      <h3 className="text-xl font-bold text-gray-900 mb-3">Status Indicators</h3>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3 bg-gray-100 p-3 rounded-lg border border-gray-300">
-                          <div className="w-3 h-3 rounded-full bg-[#14b8a6]"></div>
-                          <span className="text-gray-900 font-semibold">Active:</span>
-                          <span className="text-gray-700">Last seen within 30 seconds</span>
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">Metrics Explanation</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Status Indicators</h4>
+                          <p className="text-sm text-gray-700 mb-3">Status is derived from the <code className="bg-gray-200 px-2 py-1 rounded text-xs">last_seen_timestamp</code> field and represents recent node activity, NOT long-term uptime. No historical uptime tracking is performed.</p>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3 bg-gray-100 p-3 rounded-lg border border-gray-300">
+                              <div className="w-3 h-3 rounded-full bg-[#14b8a6]"></div>
+                              <span className="text-gray-900 font-semibold">Active:</span>
+                              <span className="text-gray-700">Last seen within 30 seconds</span>
+                            </div>
+                            <div className="flex items-center gap-3 bg-gray-100 p-3 rounded-lg border border-gray-300">
+                              <div className="w-3 h-3 rounded-full bg-gray-500"></div>
+                              <span className="text-gray-900 font-semibold">Warning:</span>
+                              <span className="text-gray-700">Last seen 30-120 seconds ago</span>
+                            </div>
+                            <div className="flex items-center gap-3 bg-gray-100 p-3 rounded-lg border border-gray-300">
+                              <div className="w-3 h-3 rounded-full bg-gray-700"></div>
+                              <span className="text-gray-900 font-semibold">Offline:</span>
+                              <span className="text-gray-700">Last seen over 120 seconds ago</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3 bg-gray-100 p-3 rounded-lg border border-gray-300">
-                          <div className="w-3 h-3 rounded-full bg-gray-500"></div>
-                          <span className="text-gray-900 font-semibold">Warning:</span>
-                          <span className="text-gray-700">Last seen 30-120 seconds ago</span>
-                        </div>
-                        <div className="flex items-center gap-3 bg-gray-100 p-3 rounded-lg border border-gray-300">
-                          <div className="w-3 h-3 rounded-full bg-gray-700"></div>
-                          <span className="text-gray-900 font-semibold">Offline:</span>
-                          <span className="text-gray-700">Last seen over 120 seconds ago</span>
+                        <div className="p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
+                          <p className="text-sm text-blue-800 font-semibold">Important Note</p>
+                          <p className="text-sm text-blue-700 mt-1">The "uptime" percentage shown is a calculated metric based on recent activity, not actual historical uptime data.</p>
                         </div>
                       </div>
                     </section>
 
                     {/* About Xandeum */}
                     <section id="about">
-                      <h3 className="text-xl font-bold text-gray-900 mb-3">About Xandeum</h3>
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">About Xandeum pNodes</h3>
                       <p className="text-gray-700 leading-relaxed mb-3">
-                        Xandeum is revolutionizing blockchain storage by solving the storage trilemma. Our solution provides scalable storage to exabytes, smart contract native integration, and random access capabilities for Solana.
+                        Xandeum is building a decentralized storage solution for Solana using pNodes (participant nodes). The pNode network aims to provide scalable, smart contract-native storage with random access capabilities.
                       </p>
-                      <p className="text-gray-700 leading-relaxed">
-                        Through our pNode network and liquid staking solutions, we enable decentralized storage that compounds your earnings while supporting the network.
+                      <p className="text-gray-700 leading-relaxed mb-3">
+                        This dashboard monitors the DevNet pNode network, providing transparency into node participation, geographic distribution, and network health.
                       </p>
+                      <div className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded">
+                        <p className="text-sm text-orange-800 font-semibold">Staking & Rewards Disclaimer</p>
+                        <p className="text-sm text-orange-700 mt-1">Staking and storage rewards are not yet live on pNodes. This dashboard does not display stake, rewards, or payout data. Any future staking features are outside the scope of this dashboard.</p>
+                      </div>
                     </section>
 
                     {/* Frequently Asked Questions */}
@@ -1528,23 +1638,27 @@ export default function Home() {
                       <div className="space-y-4">
                         <div>
                           <h4 className="font-semibold text-gray-900 mb-1">What is a pNode?</h4>
-                          <p className="text-gray-700 text-sm">pNodes are decentralized storage nodes that form the backbone of Xandeum's storage network. They use erasure coding technology to provide reliable, scalable storage for Solana.</p>
+                          <p className="text-gray-700 text-sm">pNodes (participant nodes) are storage nodes in the Xandeum network. They participate in providing decentralized storage for the Solana ecosystem.</p>
                         </div>
                         <div>
                           <h4 className="font-semibold text-gray-900 mb-1">How often does the data refresh?</h4>
-                          <p className="text-gray-700 text-sm">The dashboard automatically refreshes every 30 seconds to provide real-time monitoring of all DevNet nodes.</p>
+                          <p className="text-gray-700 text-sm">The dashboard automatically refreshes every 30 seconds by querying public pRPC endpoints for the latest node data.</p>
                         </div>
                         <div>
                           <h4 className="font-semibold text-gray-900 mb-1">What does the uptime percentage mean?</h4>
-                          <p className="text-gray-700 text-sm">Uptime percentage indicates how recently a node was active. It's calculated based on the last seen timestamp, with 100% meaning the node was seen within the last 30 seconds.</p>
+                          <p className="text-gray-700 text-sm">The uptime percentage is a calculated metric based on the last_seen_timestamp. It represents recent activity, not historical uptime. 100% means the node was seen within the last 30 seconds.</p>
                         </div>
                         <div>
-                          <h4 className="font-semibold text-gray-900 mb-1">Can I run my own pNode?</h4>
-                          <p className="text-gray-700 text-sm">Yes! Visit the Xandeum website to learn how to set up and run your own pNode to contribute to the decentralized storage network.</p>
+                          <h4 className="font-semibold text-gray-900 mb-1">Where does the data come from?</h4>
+                          <p className="text-gray-700 text-sm">Data is fetched from public DevNet pNode RPC endpoints using the get-pods-with-stats method. Geographic data is enriched using IP geolocation services.</p>
                         </div>
                         <div>
-                          <h4 className="font-semibold text-gray-900 mb-1">What is STOINC?</h4>
-                          <p className="text-gray-700 text-sm">STOINC (Storage Income) is Xandeum's revolutionary passive income solution that allows you to earn through scalable storage solutions on the Solana network.</p>
+                          <h4 className="font-semibold text-gray-900 mb-1">Does this show staking or rewards?</h4>
+                          <p className="text-gray-700 text-sm">No. Staking and rewards are not yet live on pNodes. This dashboard only displays node activity and network statistics.</p>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-1">Is this data from MainNet?</h4>
+                          <p className="text-gray-700 text-sm">No. This dashboard displays DevNet data only. Node counts and availability are subject to change as this is a development network.</p>
                         </div>
                       </div>
                     </section>
@@ -1554,29 +1668,33 @@ export default function Home() {
                       <h3 className="text-xl font-bold text-gray-900 mb-3">Resources</h3>
                       <div className="space-y-2">
                         <a href="https://www.xandeum.network/" target="_blank" rel="noopener noreferrer" className="block text-blue-600 hover:text-blue-800 underline">
-                          Official Website
-                        </a>
-                        <a href="https://www.xandeum.network/stoinc" target="_blank" rel="noopener noreferrer" className="block text-blue-600 hover:text-blue-800 underline">
-                          STOINC - Passive Income Solution
-                        </a>
-                        <a href="https://xandsol.xandeum.network/" target="_blank" rel="noopener noreferrer" className="block text-blue-600 hover:text-blue-800 underline">
-                          Liquid Staking Platform
+                          Xandeum Official Website
                         </a>
                         <a href="https://www.xandeum.network/blog" target="_blank" rel="noopener noreferrer" className="block text-blue-600 hover:text-blue-800 underline">
-                          Latest News & Updates
+                          Xandeum Blog & Updates
+                        </a>
+                        <a href="https://github.com/Hermit210/Xandeum" target="_blank" rel="noopener noreferrer" className="block text-blue-600 hover:text-blue-800 underline">
+                          Dashboard Source Code (GitHub)
                         </a>
                       </div>
                     </section>
 
-                    {/* Technical Details */}
+                    {/* Dashboard Purpose */}
                     <section id="technical">
-                      <h3 className="text-xl font-bold text-gray-900 mb-3">Technical Details</h3>
-                      <div className="space-y-2 text-gray-700">
-                        <p><strong className="text-gray-900">Network:</strong> Solana DevNet</p>
-                        <p><strong className="text-gray-900">Refresh Rate:</strong> 30 seconds</p>
-                        <p><strong className="text-gray-900">Storage Technology:</strong> Erasure Coding</p>
-                        <p><strong className="text-gray-900">Scalability:</strong> Exabytes+</p>
-                        <p><strong className="text-gray-900">Integration:</strong> Smart Contract Native</p>
+                      <h3 className="text-xl font-bold text-gray-900 mb-3">Dashboard Purpose</h3>
+                      <div className="space-y-3 text-gray-700">
+                        <p className="leading-relaxed">
+                          <strong className="text-gray-900">Network Visibility:</strong> This dashboard provides real-time visibility into the Xandeum DevNet pNode network, displaying node activity, geographic distribution, and software versions.
+                        </p>
+                        <p className="leading-relaxed">
+                          <strong className="text-gray-900">Monitoring Tool:</strong> Developers and node operators can use this dashboard to monitor DevNet node availability and track network participation patterns.
+                        </p>
+                        <p className="leading-relaxed">
+                          <strong className="text-gray-900">Open Data:</strong> By making pNode data publicly accessible through this dashboard, we promote transparency in the Xandeum DevNet ecosystem.
+                        </p>
+                        <p className="leading-relaxed">
+                          <strong className="text-gray-900">Educational Resource:</strong> This dashboard serves as an educational tool for understanding how pNodes participate in the Xandeum network.
+                        </p>
                       </div>
                     </section>
                   </div>
