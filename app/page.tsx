@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Area, AreaChart } from "recharts";
+import Link from "next/link";
 
 type Node = {
   address: string;
@@ -302,12 +303,12 @@ export default function Home() {
                   <span className="text-yellow-400 text-lg">💡</span>
                   Analytics
                 </button>
-                <button
-                  onClick={() => setShowDocsModal(true)}
+                <Link
+                  href="/docs"
                   className="text-base font-bold text-gray-400 hover:text-white transition-colors"
                 >
                   Docs
-                </button>
+                </Link>
               </nav>
 
               {/* Right Side - Actions */}
@@ -382,15 +383,13 @@ export default function Home() {
                     <span className="text-yellow-400 text-lg">💡</span>
                     Analytics
                   </button>
-                  <button
-                    onClick={() => {
-                      setShowDocsModal(true);
-                      setShowMobileMenu(false);
-                    }}
-                    className="text-left px-4 py-3 rounded-lg text-base font-bold text-gray-300 hover:bg-white/5 transition-colors"
+                  <Link
+                    href="/docs"
+                    onClick={() => setShowMobileMenu(false)}
+                    className="text-left px-4 py-3 rounded-lg text-base font-bold text-gray-300 hover:bg-white/5 transition-colors block"
                   >
                     Docs
-                  </button>
+                  </Link>
                   <button
                     onClick={() => {
                       fetchNodes(true);
@@ -523,42 +522,42 @@ export default function Home() {
             <table className="w-full">
               <thead className="bg-[#0d1425] sticky top-0 border-b-2 border-[#14b8a6]/40">
                 <tr>
-                  <th className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-bold text-white uppercase tracking-wider">
+                  <th className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-black text-white uppercase tracking-wider">
                     Status
                   </th>
                   <th
                     onClick={() => handleSort("pubkey")}
-                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
+                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-black text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     Public Key {sortField === "pubkey" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
                   <th
                     onClick={() => handleSort("address")}
-                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
+                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-black text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     Address {sortField === "address" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
                   <th
                     onClick={() => handleSort("version")}
-                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
+                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-black text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     Version {sortField === "version" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
                   <th
                     onClick={() => handleSort("uptime")}
-                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
+                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-black text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     Uptime {sortField === "uptime" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
                   <th
                     onClick={() => handleSort("city")}
-                    className="hidden lg:table-cell text-left px-6 py-4 text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
+                    className="hidden lg:table-cell text-left px-6 py-4 text-xs font-black text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     City {sortField === "city" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
                   <th
                     onClick={() => handleSort("last_seen")}
-                    className="text-right px-6 py-4 text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
+                    className="text-right px-6 py-4 text-xs font-black text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     Last Seen {sortField === "last_seen" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
