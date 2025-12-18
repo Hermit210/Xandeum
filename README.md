@@ -4,10 +4,10 @@ A real-time analytics platform for monitoring Xandeum pNodes on DevNet, built us
 
 The dashboard provides transparent visibility into node activity, versions, and network health — similar in spirit to Solana validator dashboards like topvalidators.app.
 
-**Live Demo:** https://xandeumpnode.vercel.app/
+**Live Demo:** https://xandeumpnode-lime.vercel.app/
 
 **Repository:** https://github.com/Hermit210/Xandeum
-pdf/overview : https://xandeum-pnode-analytics--2annj0v.gamma.site/
+
 
 ## Overview
 
