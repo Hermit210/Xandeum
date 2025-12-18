@@ -8,6 +8,8 @@ The dashboard provides transparent visibility into node activity, versions, and 
 
 **Repository:** https://github.com/Hermit210/Xandeum
 
+PITCH DECK : https://click-here-pd6wobm.gamma.site/               (page pitch deck)
+
 
 ## Overview
 
