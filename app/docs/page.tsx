@@ -196,30 +196,6 @@ http://localhost:3000`}</code>
                     </pre>
                   </div>
                 </div>
-
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-3">Tech Stack</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-                      <h4 className="font-bold text-white mb-2">Frontend</h4>
-                      <ul className="space-y-1 text-sm text-gray-300">
-                        <li>• Next.js 16 (App Router)</li>
-                        <li>• React 19</li>
-                        <li>• TypeScript</li>
-                        <li>• Tailwind CSS</li>
-                      </ul>
-                    </div>
-                    <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-                      <h4 className="font-bold text-white mb-2">Libraries</h4>
-                      <ul className="space-y-1 text-sm text-gray-300">
-                        <li>• xandeum-prpc</li>
-                        <li>• Recharts</li>
-                        <li>• Framer Motion</li>
-                        <li>• IP Geolocation API</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
               </div>
             </section>
 
@@ -688,14 +664,6 @@ vercel --prod`}</code>
                 </details>
               </div>
             </section>
-
-            {/* Footer */}
-            <footer className="border-t border-gray-800 pt-8 mt-12">
-              <div className="text-center text-gray-400 text-sm">
-                <p>© 2025 Xandeum Foundation</p>
-                <p className="mt-2">All rights reserved</p>
-              </div>
-            </footer>
           </main>
         </div>
       </div>
