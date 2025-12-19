@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Area, AreaChart } from "recharts";
 import Link from "next/link";
+import HelpBot from "@/components/HelpBot";
 
 type Node = {
   address: string;
@@ -41,18 +42,17 @@ export default function Home() {
     try {
       if (showRefresh) setRefreshing(true);
       setError(null);
-      const response = await fetch("/api/nodes");
+      const res = await fetch("/api/nodes", { cache: "no-store" });
+      const data = await res.json();
 
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setNodes(data.filter((n: Node) => n.pubkey !== null));
+      // Handle both array and object with pods property
+      const pods = Array.isArray(data) ? data : (data.pods || []);
+      setNodes(pods.filter((n: Node) => n.pubkey !== null));
       setLoading(false);
       if (showRefresh) setTimeout(() => setRefreshing(false), 500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch nodes");
+      console.error("Failed to fetch nodes", err);
+      setNodes([]);
       setLoading(false);
       if (showRefresh) setRefreshing(false);
     }
@@ -242,6 +242,7 @@ export default function Home() {
   ];
 
   return (
+    <>
     <div className="min-h-screen bg-[#050b1f] relative">
       {/* Background Layer 1 - background.jpeg (subtle) */}
       <div 
@@ -1706,5 +1707,9 @@ export default function Home() {
       </AnimatePresence>
       </div>
     </div>
+
+      {/* Help Bot */}
+      <HelpBot stats={stats} totalNodes={nodes.length} />
+    </>
   );
 }
