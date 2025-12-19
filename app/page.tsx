@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Area, AreaChart } from "recharts";
 import Link from "next/link";
-import HelpBot from "@/components/HelpBot";
 
 type Node = {
   address: string;
@@ -1667,7 +1666,7 @@ export default function Home() {
     </div>
 
       {/* Help Bot */}
-      <HelpBot stats={stats} totalNodes={nodes.length} />
+    
     </>
   );
 }
