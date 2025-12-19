@@ -11,14 +11,9 @@ type Node = {
   pubkey: string | null;
   version: string;
   last_seen_timestamp: number;
-  city?: string;
-  country?: string;
-  latitude?: number;
-  longitude?: number;
-  provider?: string;
 };
 
-type SortField = "pubkey" | "address" | "version" | "last_seen" | "city" | "uptime";
+type SortField = "pubkey" | "address" | "version" | "last_seen" | "uptime";
 type FilterStatus = "all" | "active" | "warning" | "offline";
 type ViewMode = "overview" | "analytics" | "docs";
 
@@ -47,6 +42,12 @@ export default function Home() {
 
       // Handle both array and object with pods property
       const pods = Array.isArray(data) ? data : (data.pods || []);
+      
+      // Check if data is stale
+      if (data.stale) {
+        console.warn(`Using stale data (${data.cacheAge}s old)`);
+      }
+      
       setNodes(pods.filter((n: Node) => n.pubkey !== null));
       setLoading(false);
       if (showRefresh) setTimeout(() => setRefreshing(false), 500);
@@ -145,8 +146,7 @@ export default function Home() {
   const filteredAndSortedNodes = useMemo(() => {
     let filtered = nodes.filter((node) => {
       const matchesSearch = node.pubkey?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        node.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        node.city?.toLowerCase().includes(searchTerm.toLowerCase());
+        node.address.toLowerCase().includes(searchTerm.toLowerCase());
 
       const health = getNodeHealth(node.last_seen_timestamp);
       const matchesStatus = filterStatus === "all" || health.status === filterStatus;
@@ -166,9 +166,6 @@ export default function Home() {
       } else if (sortField === "uptime") {
         aVal = getUptimePercentage(a.last_seen_timestamp);
         bVal = getUptimePercentage(b.last_seen_timestamp);
-      } else if (sortField === "city") {
-        aVal = a.city || "";
-        bVal = b.city || "";
       } else {
         aVal = a[sortField] || "";
         bVal = b[sortField] || "";
@@ -540,22 +537,17 @@ export default function Home() {
                   </th>
                   <th
                     onClick={() => handleSort("version")}
-                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-black text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
+                    className="text-left px-0.5 md:px-1 py-3 md:py-4 text-[10px] md:text-xs font-black text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     Version {sortField === "version" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
                   <th
                     onClick={() => handleSort("uptime")}
-                    className="text-left px-3 md:px-6 py-3 md:py-4 text-[10px] md:text-xs font-black text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
+                    className="text-left px-0.5 md:px-1 py-3 md:py-4 text-[10px] md:text-xs font-black text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
                   >
                     Uptime {sortField === "uptime" && (sortOrder === "asc" ? "↑" : "↓")}
                   </th>
-                  <th
-                    onClick={() => handleSort("city")}
-                    className="hidden lg:table-cell text-left px-6 py-4 text-xs font-black text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
-                  >
-                    City {sortField === "city" && (sortOrder === "asc" ? "↑" : "↓")}
-                  </th>
+
                   <th
                     onClick={() => handleSort("last_seen")}
                     className="text-right px-6 py-4 text-xs font-black text-white uppercase tracking-wider cursor-pointer hover:bg-white/5 transition-colors"
@@ -595,13 +587,13 @@ export default function Home() {
                       <td className="px-6 py-4">
                         <span className="text-sm font-medium text-white">{node.address}</span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-0.5 py-4">
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-[#14b8a6] to-[#0d9488] text-white">
                           {node.version}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
+                      <td className="px-0.5 py-4">
+                        <div className="flex items-center gap-1">
                           <div className="flex-1 bg-white/20 rounded-full h-2 overflow-hidden max-w-[100px]">
                             <div
                               className={`h-full transition-all ${uptimePercent > 75 ? "bg-green-500" : uptimePercent > 30 ? "bg-yellow-500" : "bg-red-500"
@@ -614,9 +606,7 @@ export default function Home() {
                           </span>
                         </div>
                       </td>
-                      <td className="hidden lg:table-cell px-6 py-4">
-                        <span className="text-sm font-medium text-white">{node.city || "Unknown"}</span>
-                      </td>
+
                       <td className="px-6 py-4 text-right">
                         <span className="text-sm font-semibold text-white">
                           {getTimeSince(node.last_seen_timestamp)} ago
@@ -674,10 +664,7 @@ export default function Home() {
                     <div className="text-[10px] text-gray-400 mb-1">Address</div>
                     <div className="text-xs text-white">{node.address}</div>
                   </div>
-                  <div>
-                    <div className="text-[10px] text-gray-400 mb-1">City</div>
-                    <div className="text-xs text-white">{node.city || "Unknown"}</div>
-                  </div>
+
                 </div>
 
                 {/* Uptime and Last Seen */}
@@ -1128,7 +1115,7 @@ export default function Home() {
                   </button>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {/* Status Overview Card */}
                   <div className="bg-gradient-to-br from-[#14b8a6]/10 to-transparent rounded-lg p-3 border border-[#14b8a6]/30">
                     <div className="flex items-center justify-between mb-2">
@@ -1184,35 +1171,6 @@ export default function Home() {
                           {selectedNode.version}
                         </div>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  <div>
-                    <div className="text-[10px] text-[#14b8a6] font-bold mb-1 uppercase tracking-wider">Location</div>
-                    <div className="bg-[#050b1f] p-2 rounded-lg border border-[#14b8a6]/30 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-400 font-semibold text-[10px]">City:</span>
-                        <span className="text-white font-medium text-xs">{selectedNode.city || "Unknown"}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-400 font-semibold text-[10px]">Country:</span>
-                        <span className="text-white font-medium text-xs">{selectedNode.country || "Unknown"}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-400 font-semibold text-[10px]">Coordinates:</span>
-                        <span className="text-white font-mono text-[10px]">
-                          {selectedNode.latitude?.toFixed(4)}, {selectedNode.longitude?.toFixed(4)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Provider */}
-                  <div>
-                    <div className="text-[10px] text-[#14b8a6] font-bold mb-1 uppercase tracking-wider">Provider</div>
-                    <div className="text-xs text-white bg-[#050b1f] p-2 rounded-lg border border-[#14b8a6]/30">
-                      {selectedNode.provider || "Unknown"}
                     </div>
                   </div>
 

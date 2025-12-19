@@ -18,29 +18,29 @@ export default function Docs() {
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <header className="border-b border-gray-800 bg-black/95 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="Xandeum Logo" className="h-8 object-contain" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <img src="/logo.png" alt="Xandeum Logo" className="h-6 sm:h-8 object-contain" />
               <div>
-                <h1 className="text-xl font-bold text-white">Xandeum pNode Analytics</h1>
-                <p className="text-sm text-gray-400">Documentation</p>
+                <h1 className="text-base sm:text-xl font-bold text-white">Xandeum pNode Analytics</h1>
+                <p className="text-xs sm:text-sm text-gray-400">Documentation</p>
               </div>
             </div>
             <Link
               href="/"
-              className="px-4 py-2 rounded-lg bg-[#14b8a6] hover:bg-[#0d9488] text-white font-bold transition-all"
+              className="px-3 sm:px-4 py-2 rounded-lg bg-[#14b8a6] hover:bg-[#0d9488] text-white text-xs sm:text-sm font-bold transition-all"
             >
-              Back to Dashboard
+              Dashboard
             </Link>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex gap-8">
-          {/* Sidebar Navigation */}
-          <aside className="w-64 flex-shrink-0 sticky top-24 h-fit">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Sidebar Navigation - Hidden on mobile, shown on desktop */}
+          <aside className="hidden lg:block w-64 flex-shrink-0 sticky top-24 h-fit">
             <nav className="space-y-1">
               <button
                 onClick={() => scrollToSection("overview")}
@@ -136,10 +136,10 @@ export default function Docs() {
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1 space-y-12">
+          <main className="flex-1 space-y-8 sm:space-y-12 w-full">
             {/* Overview */}
             <section id="overview" className="scroll-mt-24">
-              <h2 className="text-3xl font-black text-white mb-4">Overview</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">Overview</h2>
               <div className="space-y-4 text-gray-300 leading-relaxed">
                 <p>
                   Xandeum pNode Analytics is a real-time monitoring dashboard for Xandeum DevNet nodes. 
@@ -150,7 +150,7 @@ export default function Docs() {
                   The platform retrieves live pNode gossip data from public pRPC endpoints and presents it 
                   in a clear, user-friendly interface similar to Solana validator dashboards.
                 </p>
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mt-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 mt-6">
                   <h3 className="text-xl font-bold text-white mb-3">Key Highlights</h3>
                   <ul className="space-y-2 text-gray-300">
                     <li className="flex items-start gap-2">
@@ -176,7 +176,7 @@ export default function Docs() {
 
             {/* Getting Started */}
             <section id="getting-started" className="scroll-mt-24">
-              <h2 className="text-3xl font-black text-white mb-4">Getting Started</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">Getting Started</h2>
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-bold text-white mb-3">Installation</h3>
@@ -201,9 +201,9 @@ http://localhost:3000`}</code>
 
             {/* Features */}
             <section id="features" className="scroll-mt-24">
-              <h2 className="text-3xl font-black text-white mb-4">Features</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">Features</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-lg font-bold text-white mb-3">Network Statistics</h3>
                   <ul className="space-y-2 text-sm text-gray-300">
                     <li>• Total node count</li>
@@ -212,7 +212,7 @@ http://localhost:3000`}</code>
                     <li>• Unique IP addresses</li>
                   </ul>
                 </div>
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-lg font-bold text-white mb-3">Search & Filter</h3>
                   <ul className="space-y-2 text-sm text-gray-300">
                     <li>• Search by public key</li>
@@ -221,7 +221,7 @@ http://localhost:3000`}</code>
                     <li>• Sort by multiple columns</li>
                   </ul>
                 </div>
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-lg font-bold text-white mb-3">Real-time Monitoring</h3>
                   <ul className="space-y-2 text-sm text-gray-300">
                     <li>• Auto-refresh every 30 seconds</li>
@@ -230,7 +230,7 @@ http://localhost:3000`}</code>
                     <li>• Last seen timestamps</li>
                   </ul>
                 </div>
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-lg font-bold text-white mb-3">Geographic Data</h3>
                   <ul className="space-y-2 text-sm text-gray-300">
                     <li>• Node location (city, country)</li>
@@ -244,14 +244,14 @@ http://localhost:3000`}</code>
 
             {/* Using the Dashboard */}
             <section id="dashboard" className="scroll-mt-24">
-              <h2 className="text-3xl font-black text-white mb-4">Using the Dashboard</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">Using the Dashboard</h2>
               <div className="space-y-6">
                 <p className="text-gray-300 leading-relaxed">
                   The main dashboard provides a comprehensive table view of all pNodes in the network with 
                   real-time status updates, filtering capabilities, and interactive features.
                 </p>
 
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-xl font-bold text-white mb-4">Table Columns</h3>
                   <div className="space-y-4">
                     <div>
@@ -306,7 +306,7 @@ http://localhost:3000`}</code>
                   </div>
                 </div>
 
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-xl font-bold text-white mb-3">Status Indicators</h3>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
@@ -327,7 +327,7 @@ http://localhost:3000`}</code>
                   </div>
                 </div>
 
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-xl font-bold text-white mb-3">Sorting</h3>
                   <p className="text-gray-300 mb-3">
                     Click any column header to sort the table by that field. Click again to reverse the sort order. 
@@ -343,14 +343,14 @@ http://localhost:3000`}</code>
 
             {/* Analytics */}
             <section id="analytics" className="scroll-mt-24">
-              <h2 className="text-3xl font-black text-white mb-4">Analytics</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">Analytics</h2>
               <div className="space-y-6">
                 <p className="text-gray-300 leading-relaxed">
                   The analytics section provides visual insights into network activity, version distribution, 
                   and node status patterns through interactive charts.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                  <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                     <h3 className="text-lg font-bold text-white mb-3">Version Distribution</h3>
                     <p className="text-sm text-gray-300 mb-4">
                       Pie chart showing the distribution of software versions across all nodes in the network. 
@@ -364,7 +364,7 @@ http://localhost:3000`}</code>
                       <li>• Shows all versions in the network</li>
                     </ul>
                   </div>
-                  <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                  <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                     <h3 className="text-lg font-bold text-white mb-3">Activity Timeline</h3>
                     <p className="text-sm text-gray-300 mb-4">
                       Line chart displaying node activity patterns based on last-seen timestamps. 
@@ -383,14 +383,14 @@ http://localhost:3000`}</code>
 
             {/* Node Details Panel */}
             <section id="node-details" className="scroll-mt-24">
-              <h2 className="text-3xl font-black text-white mb-4">Node Details Panel</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">Node Details Panel</h2>
               <div className="space-y-6">
                 <p className="text-gray-300 leading-relaxed">
                   Click any row in the node table to open a detailed information panel on the right side of the screen. 
                   This panel provides comprehensive information about the selected node.
                 </p>
 
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-xl font-bold text-white mb-4">Panel Sections</h3>
                   <div className="space-y-4">
                     <div>
@@ -454,7 +454,7 @@ http://localhost:3000`}</code>
                   </div>
                 </div>
 
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-xl font-bold text-white mb-3">Closing the Panel</h3>
                   <p className="text-gray-300">
                     Click the X button in the top-right corner of the panel, or click anywhere outside the panel 
@@ -466,9 +466,9 @@ http://localhost:3000`}</code>
 
             {/* API Reference */}
             <section id="api" className="scroll-mt-24">
-              <h2 className="text-3xl font-black text-white mb-4">API Reference</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">API Reference</h2>
               <div className="space-y-6">
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-xl font-bold text-white mb-3">GET /api/nodes</h3>
                   <p className="text-gray-300 mb-4">
                     Fetches live pNode data from DevNet using the <code className="bg-black px-2 py-1 rounded text-[#14b8a6]">get-pods-with-stats</code> pRPC method.
@@ -492,7 +492,7 @@ http://localhost:3000`}</code>
                     </pre>
                   </div>
                 </div>
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-xl font-bold text-white mb-3">Data Source</h3>
                   <p className="text-gray-300">
                     Data is fetched from public DevNet pNode RPC endpoints. Geographic information is enriched 
@@ -504,9 +504,9 @@ http://localhost:3000`}</code>
 
             {/* Deployment */}
             <section id="deployment" className="scroll-mt-24">
-              <h2 className="text-3xl font-black text-white mb-4">Deployment</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">Deployment</h2>
               <div className="space-y-6">
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-xl font-bold text-white mb-3">Vercel Deployment</h3>
                   <p className="text-gray-300 mb-4">
                     The dashboard is deployed on Vercel for optimal performance and automatic deployments.
@@ -524,11 +524,11 @@ vercel --prod`}</code>
                     </pre>
                   </div>
                 </div>
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-xl font-bold text-white mb-3">Environment Variables</h3>
                   <p className="text-gray-300 mb-3">No environment variables required. The dashboard uses public pRPC endpoints.</p>
                 </div>
-                <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6">
                   <h3 className="text-xl font-bold text-white mb-3">Build Command</h3>
                   <div className="bg-black border border-gray-700 rounded-lg p-4">
                     <pre className="text-sm text-gray-300">
@@ -541,9 +541,9 @@ vercel --prod`}</code>
 
             {/* FAQ */}
             <section id="faq" className="scroll-mt-24">
-              <h2 className="text-3xl font-black text-white mb-4">Frequently Asked Questions</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mb-4">Frequently Asked Questions</h2>
               <div className="space-y-4">
-                <details className="bg-gray-900 border border-gray-800 rounded-lg p-6 group">
+                <details className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 group">
                   <summary className="text-lg font-bold text-white cursor-pointer list-none flex items-center justify-between">
                     <span>What is a pNode?</span>
                     <span className="text-[#14b8a6] group-open:rotate-180 transition-transform">▼</span>
@@ -554,7 +554,7 @@ vercel --prod`}</code>
                   </p>
                 </details>
 
-                <details className="bg-gray-900 border border-gray-800 rounded-lg p-6 group">
+                <details className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 group">
                   <summary className="text-lg font-bold text-white cursor-pointer list-none flex items-center justify-between">
                     <span>How often does the data refresh?</span>
                     <span className="text-[#14b8a6] group-open:rotate-180 transition-transform">▼</span>
@@ -565,7 +565,7 @@ vercel --prod`}</code>
                   </p>
                 </details>
 
-                <details className="bg-gray-900 border border-gray-800 rounded-lg p-6 group">
+                <details className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 group">
                   <summary className="text-lg font-bold text-white cursor-pointer list-none flex items-center justify-between">
                     <span>What does the uptime percentage mean?</span>
                     <span className="text-[#14b8a6] group-open:rotate-180 transition-transform">▼</span>
@@ -577,7 +577,7 @@ vercel --prod`}</code>
                   </p>
                 </details>
 
-                <details className="bg-gray-900 border border-gray-800 rounded-lg p-6 group">
+                <details className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 group">
                   <summary className="text-lg font-bold text-white cursor-pointer list-none flex items-center justify-between">
                     <span>Where does the data come from?</span>
                     <span className="text-[#14b8a6] group-open:rotate-180 transition-transform">▼</span>
@@ -589,7 +589,7 @@ vercel --prod`}</code>
                   </p>
                 </details>
 
-                <details className="bg-gray-900 border border-gray-800 rounded-lg p-6 group">
+                <details className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 group">
                   <summary className="text-lg font-bold text-white cursor-pointer list-none flex items-center justify-between">
                     <span>Does this show staking or rewards?</span>
                     <span className="text-[#14b8a6] group-open:rotate-180 transition-transform">▼</span>
@@ -601,7 +601,7 @@ vercel --prod`}</code>
                   </p>
                 </details>
 
-                <details className="bg-gray-900 border border-gray-800 rounded-lg p-6 group">
+                <details className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 group">
                   <summary className="text-lg font-bold text-white cursor-pointer list-none flex items-center justify-between">
                     <span>Is this data from MainNet?</span>
                     <span className="text-[#14b8a6] group-open:rotate-180 transition-transform">▼</span>
@@ -612,7 +612,7 @@ vercel --prod`}</code>
                   </p>
                 </details>
 
-                <details className="bg-gray-900 border border-gray-800 rounded-lg p-6 group">
+                <details className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 group">
                   <summary className="text-lg font-bold text-white cursor-pointer list-none flex items-center justify-between">
                     <span>Can I run my own pNode?</span>
                     <span className="text-[#14b8a6] group-open:rotate-180 transition-transform">▼</span>
@@ -626,7 +626,7 @@ vercel --prod`}</code>
                   </p>
                 </details>
 
-                <details className="bg-gray-900 border border-gray-800 rounded-lg p-6 group">
+                <details className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 group">
                   <summary className="text-lg font-bold text-white cursor-pointer list-none flex items-center justify-between">
                     <span>How do I filter nodes by status?</span>
                     <span className="text-[#14b8a6] group-open:rotate-180 transition-transform">▼</span>
@@ -637,7 +637,7 @@ vercel --prod`}</code>
                   </p>
                 </details>
 
-                <details className="bg-gray-900 border border-gray-800 rounded-lg p-6 group">
+                <details className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 group">
                   <summary className="text-lg font-bold text-white cursor-pointer list-none flex items-center justify-between">
                     <span>What technology is used to build this dashboard?</span>
                     <span className="text-[#14b8a6] group-open:rotate-180 transition-transform">▼</span>
@@ -649,7 +649,7 @@ vercel --prod`}</code>
                   </p>
                 </details>
 
-                <details className="bg-gray-900 border border-gray-800 rounded-lg p-6 group">
+                <details className="bg-gray-900 border border-gray-800 rounded-lg p-4 sm:p-6 group">
                   <summary className="text-lg font-bold text-white cursor-pointer list-none flex items-center justify-between">
                     <span>Is the source code available?</span>
                     <span className="text-[#14b8a6] group-open:rotate-180 transition-transform">▼</span>

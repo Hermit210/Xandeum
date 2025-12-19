@@ -5,17 +5,17 @@ export default function About() {
     <div className="min-h-screen bg-black text-white">
       {/* Navigation */}
       <nav className="border-b-2 border-white bg-black">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold">Xandeum pNode Dashboard</h1>
+              <h1 className="text-lg sm:text-xl font-bold">Xandeum pNode Dashboard</h1>
               <p className="text-xs text-gray-400">Live pNode analytics via pRPC</p>
             </div>
-            <div className="flex items-center gap-6">
-              <Link href="/" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
+            <div className="flex items-center gap-3 sm:gap-6">
+              <Link href="/" className="text-xs sm:text-sm font-medium text-gray-400 hover:text-white transition-colors">
                 Dashboard
               </Link>
-              <Link href="/about" className="text-sm font-bold text-white">
+              <Link href="/about" className="text-xs sm:text-sm font-bold text-white">
                 About
               </Link>
             </div>
@@ -23,13 +23,13 @@ export default function About() {
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className="bg-white text-black border-2 border-black rounded-xl p-8">
-          <h2 className="text-3xl font-black mb-6">About This Project</h2>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="bg-white text-black border-2 border-black rounded-xl p-4 sm:p-8">
+          <h2 className="text-2xl sm:text-3xl font-black mb-4 sm:mb-6">About This Project</h2>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <section>
-              <h3 className="text-xl font-bold mb-3">What are Xandeum pNodes?</h3>
+              <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">What are Xandeum pNodes?</h3>
               <p className="text-sm leading-relaxed font-medium">
                 Xandeum pNodes are participant nodes in the Xandeum network. They form the backbone
                 of the decentralized infrastructure, enabling distributed storage and computation
@@ -38,7 +38,7 @@ export default function About() {
             </section>
 
             <section>
-              <h3 className="text-xl font-bold mb-3">About This Dashboard</h3>
+              <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">About This Dashboard</h3>
               <p className="text-sm leading-relaxed font-medium mb-3">
                 This analytics platform provides real-time monitoring of Xandeum pNodes on the DevNet.
                 It fetches live data directly from the Xandeum network using the official pRPC client.
@@ -53,42 +53,42 @@ export default function About() {
             </section>
 
             <section>
-              <h3 className="text-xl font-bold mb-3">Technical Details</h3>
-              <div className="bg-black text-white border-2 border-black rounded-lg p-4 text-sm">
-                <div className="grid grid-cols-2 gap-4">
+              <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Technical Details</h3>
+              <div className="bg-black text-white border-2 border-black rounded-lg p-3 sm:p-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <div className="text-gray-400 text-xs font-bold mb-1">Data Source</div>
-                    <div className="font-mono font-bold">Xandeum DevNet</div>
+                    <div className="font-mono font-bold text-xs sm:text-sm">Xandeum DevNet</div>
                   </div>
                   <div>
                     <div className="text-gray-400 text-xs font-bold mb-1">Update Frequency</div>
-                    <div className="font-bold">Every 30 seconds</div>
+                    <div className="font-bold text-xs sm:text-sm">Every 30 seconds</div>
                   </div>
                   <div>
                     <div className="text-gray-400 text-xs font-bold mb-1">Client</div>
-                    <div className="font-mono font-bold">xandeum-prpc</div>
+                    <div className="font-mono font-bold text-xs sm:text-sm">xandeum-prpc</div>
                   </div>
                   <div>
                     <div className="text-gray-400 text-xs font-bold mb-1">Framework</div>
-                    <div className="font-bold">Next.js 16</div>
+                    <div className="font-bold text-xs sm:text-sm">Next.js 16</div>
                   </div>
                 </div>
               </div>
             </section>
 
             <section>
-              <h3 className="text-xl font-bold mb-3">Node Status Indicators</h3>
+              <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Node Status Indicators</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0"></div>
                   <span className="font-bold">Online - Last seen within 60 seconds</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-500 flex-shrink-0"></div>
                   <span className="font-bold">Stale - Last seen 1-5 minutes ago</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-red-500 flex-shrink-0"></div>
                   <span className="font-bold">Offline - Last seen over 5 minutes ago</span>
                 </div>
               </div>
