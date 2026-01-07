@@ -31,7 +31,7 @@ The platform focuses on:
 - Displays all pNodes currently appearing in gossip.
 
 **Auto Refresh**
-- Automatically updates data every 30 seconds.
+Automatically updates data every 30 seconds.
 
 **No Local pNode Required**
 Connects directly to public DevNet endpoints.
