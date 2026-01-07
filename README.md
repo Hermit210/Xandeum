@@ -84,7 +84,6 @@ These statuses are calculated client-side for visualization only.
 ### Architecture
 
 Data Flow:
-```
 Frontend (app/page.tsx)
     ↓ fetch("/api/nodes")
 API Route (app/api/nodes/route.ts)
