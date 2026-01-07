@@ -34,7 +34,7 @@ The platform focuses on:
 - Automatically updates data every 30 seconds.
 
 **No Local pNode Required**
-- Connects directly to public DevNet endpoints.
+Connects directly to public DevNet endpoints.
 
 ### Dashboard Features
 
