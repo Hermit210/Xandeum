@@ -28,7 +28,7 @@ The platform focuses on:
 - Fetches real-time data from Xandeum DevNet using public pRPC endpoints.
 
 **100+ Nodes Visible**
-- Displays all pNodes currently appearing in gossip.
+ Displays all pNodes currently appearing in gossip.
 
 **Auto Refresh**
 Automatically updates data every 30 seconds.
